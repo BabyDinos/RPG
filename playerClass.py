@@ -1,5 +1,3 @@
-from typing import final
-
 
 class Player:
     # base stats
@@ -7,8 +5,8 @@ class Player:
                         'Magic Attack':5,'Defense ':5,
                         'Magic Defense': 5, 'Attack Speed':1}
     def __init__(self, name, curHealth = stats_dictionary['Max Health']):
-        self.name = name
-        self.curHealth = curHealth
+        self.Name = name
+        self.CurrentHealth = curHealth
 
 
 class Warrior(Player):
@@ -22,9 +20,9 @@ class Mage(Player):
     stats_dictionary['Magic Attack'] = 18
     stats_dictionary['Magic Defense'] = 12
 
-def difference(whatClass):
+def baseDifference(whatClass):
 
-    arr = []
+    string = ''
     player = Player('name')
     warrior = Warrior('name')
     mage = Mage('name')
@@ -32,20 +30,25 @@ def difference(whatClass):
     if whatClass == 'Warrior':
         for (x, y), (a,b) in zip(warrior.stats_dictionary.items(), player.stats_dictionary.items()):
             if y-b == 0:
-                arr.append(x + ': ' + str(b))
+                string += x + ': ' + str(b) + '\n'
             elif y - b > 0:
-                arr.append(x + ': ' + str(b) + ' (+' + str(y-b) + ')')
+                string += x + ': ' + str(b) + ' (+' + str(y-b) + ')' + '\n'
             else:
-                arr.append(x + ': ' + str(b) + ' (-' + str(y-b) + ')')
+                string += x + ': ' + str(b) + ' (-' + str(y-b) + ')' + '\n'
     elif whatClass == 'Mage':
         for (x, y), (a,b) in zip(mage.stats_dictionary.items(), player.stats_dictionary.items()):
-            if y - b == 0:
-                arr.append(x + ': ' + str(b))
+            if y-b == 0:
+                string += x + ': ' + str(b) + '\n'
             elif y - b > 0:
-                arr.append(x + ': ' + str(b) + ' (+' + str(y-b) + ')')
+                string += x + ': ' + str(b) + ' (+' + str(y-b) + ')' + '\n'
             else:
-                arr.append(x + ': ' + str(b) + ' (-' + str(y-b) + ')')
-    final_string = ''
-    for string in arr:
-        final_string += string + '\n'
-    return final_string
+                string += x + ': ' + str(b) + ' (-' + str(y-b) + ')' + '\n'
+    return string
+
+def playerInfo(player):
+    string = ''
+    for x, y in vars(player).items():
+        string += x + ': ' + str(y) + '\n'
+    for x, y in player.stats_dictionary.items():
+        string += x + ': ' + str(y) + '\n'   
+    return string

@@ -34,9 +34,9 @@ class Commands(commands.Cog):
                     description = 'Welcome ' + str(self.username_message.content)
                 )
                 embed.add_field(name = 'Warrior', value = '''Warriors are a class that specializes in swords and deal physical damage\n
-                                        {}'''.format(difference('Warrior')))
+                                        {}'''.format(baseDifference('Warrior')))
                 embed.add_field(name = 'Mage', value = '''Mages are a class that specializes in staves and deal magical damage\n
-                                        {}'''.format(difference('Mage')))          
+                                        {}'''.format(baseDifference('Mage')))          
                 embed.set_footer(text = 'Choose your class: ')      
 
                 await bot_message.edit(embed = embed)
@@ -51,7 +51,12 @@ class Commands(commands.Cog):
                             sqlCommands.save(self.id, Mage(str(self.username_message.content)) , unit = 'player')
                         case _:
                             return ctx.send('Invalid Class')
-                    await ctx.send('Welcome ' + str(self.message.content))
+                    embed = discord.Embed(
+                        title = 'Thanks for Registering ' + str(self.username_message.content),
+                        description = 'Welcome to RPG!'
+                    )
+                    
+                    await bot_message.edit(embed = embed)
             except asyncio.TimeoutError: 
                 await ctx.send('Command Timedout')
 
@@ -66,7 +71,9 @@ class Commands(commands.Cog):
             try:
                 self.message = await self.bot.wait_for('message', timeout = 20, check= lambda message: message.author == ctx.author and message.channel == ctx.channel)
                 if self.message:
-                    sqlCommands.save(self.id, str(self.message.content), unit = 'player')
+                    obj = sqlCommands.load(self.id, unit = 'player')
+                    obj.name = str(self.message.content)
+                    sqlCommands.save(self.id, obj, unit = 'player')
                     await ctx.send('Your name has been changed to ' + str(self.message.content))
             except asyncio.TimeoutError: 
                 await ctx.send('Command Timedout')
@@ -78,7 +85,11 @@ class Commands(commands.Cog):
         if not res:
             await ctx.send('You are not registered')
         else:
-            await ctx.send('Your username is: ' + res)
+            embed = discord.Embed(
+                title = 'Player Info',
+                description = playerInfo(sqlCommands.load(self.id, unit='player'))
+            )
+            await ctx.send(embed = embed)
 
     @commands.command()
     async def delete(self, ctx):
