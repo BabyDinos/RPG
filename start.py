@@ -27,8 +27,10 @@ async def hello(ctx):
 @bot.event 
 async def on_ready():
     print('We have logged in as {0.user}'.format(bot))
-    if not os.path.exists('main.sqlite'):
-        SqliteDict('main.sqlite')
+    if not os.path.exists('player.sqlite'):
+        SqliteDict('player.sqlite')
+    if not os.path.exists('enemy.sqlite'):
+        SqliteDict('enemy.sqlite')
     # async with aiosqlite.connect("main.db") as db:
     #     async with db.cursor() as cursor:
     #         await cursor.execute('CREATE TABLE IF NOT EXISTS Players (id INTEGER, username CHAR)')

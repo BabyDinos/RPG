@@ -1,9 +1,13 @@
 from sqlitedict import SqliteDict
 
 
-class sqlCommands():
+class sqlCommands:
 
-    def save(key, value, cache_file = 'main.sqlite'):
+    def save(key, value, unit):
+        if unit == 'player':
+            cache_file = 'player.sqlite'
+        else:
+            cache_file = 'enemy.sqlite'
         try:
             with SqliteDict(cache_file) as mydict:
                 mydict[key] = value
@@ -11,19 +15,29 @@ class sqlCommands():
         except Exception as ex:
             print("Error during storing data: ", ex) 
 
-    def load(key, cache_file = 'main.sqlite'):
+    def load(key, unit):
+        if unit == 'player':
+            cache_file = 'player.sqlite'
+        else:
+            cache_file = 'enemy.sqlite'
         try:
             with SqliteDict(cache_file) as mydict:
                 value = mydict[key]
+            mydict.close()
             return value
         except Exception as ex:
+            mydict.close()
             print("Error during loading data: ", ex) 
+            return False
 
-    def exists(key, cache_file = 'main.sqlite'):
+    def delete(key, unit):
+        if unit == 'player':
+            cache_file = 'player.sqlite'
+        else:
+            cache_file = 'enemy.sqlite'
         try:
             with SqliteDict(cache_file) as mydict:
-                mydict[key]
-            return True
-        except Exception:
-            print('Does Not Exist')
-            return False
+                mydict.pop(key)
+                mydict.commit()
+        except Exception as ex:
+            print("Error during deletion: ", ex)
