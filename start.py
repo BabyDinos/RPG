@@ -32,6 +32,20 @@ async def on_ready():
     if not os.path.exists('enemy.sqlite'):
         SqliteDict('enemy.sqlite')
 
+# @bot.event
+# async def on_message(message):
+#     asyncio.sleep(2)
+#     commands = ['register','nameChange','info','delete','inventory']
+#     commands = [PREFIX + x for x in commands]
+#     if message.content not in commands:
+#         if message.author == bot.user:
+#             pass
+#         else: 
+#             await message.delete()
+#     else:
+#         await bot.process_commands(message)
+
+
 async def main():
     await load()
     await bot.start(TOKEN)

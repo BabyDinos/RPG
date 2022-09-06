@@ -57,7 +57,6 @@ class accCommands(commands.Cog):
                     )
                     await self.username_message.delete()
                     await self.class_message.delete()
-                    await ctx.message.delete()
                     await self.bot_message.edit(embed = embed)
             except asyncio.TimeoutError: 
                 await ctx.send('Command Timedout', delete_after = 20)
@@ -71,7 +70,7 @@ class accCommands(commands.Cog):
                 except:
                     pass
                 await self.bot_message.delete()
-                await ctx.message.delete()
+        await ctx.message.delete()
                 
     @commands.command()
     async def nameChange(self, ctx):

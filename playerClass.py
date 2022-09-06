@@ -13,11 +13,17 @@ class Player:
         self.CurrentHealth = self.stats_dictionary['Max Health']
         self.inventory.loc[len(self.inventory.index)] = ['Gold', 'Currency used in the market and for other applications', None, 100, 'Currency']
 
-    def inventory(self):
-        pass
-
-    def equipment(self):
-        pass
+    def equip(self, equipmentName):
+        if equipmentName in self.inventory.loc[:,'Name'].values:
+            index = self.inventory.index[(self.inventory['Name'] == equipmentName)].tolist()
+            type = self.inventory.loc[index, 'Type'].tolist()[0]
+            if type == 'Attack' or type == 'Magic Attack':
+                self.equipment.loc['Weapon'] = [equipmentName, self.inventory.loc[index, 'Stats'].tolist()[0], type]
+            else:
+                self.equipment.loc['Armor'] = [equipmentName, self.inventory.loc[index, 'Stats'].tolist()[0], type]
+            return True
+        else:
+            return False
 
     def attack(self):
         pass
@@ -34,6 +40,7 @@ class Warrior(Player):
         self.stats_dictionary['Defense'] = 14
         # eqipping warrior with base weapon and armor
         self.inventory.loc[len(self.inventory.index)] = ['Wooden Sword','The most basic of swords',(0,3), 1, 'Attack']
+        self.inventory.loc[len(self.inventory.index)] = ['Wooden Staff','The most basic of staves',(0,3), 1, 'Magic Attack']
         self.inventory.loc[len(self.inventory.index)] = ['Cloth Armor','The most basic of armors',(0,2), 1, 'Defense']
         self.equipment.loc['Weapon'] = ['Wooden Sword',(0,3), 'Attack']
         self.equipment.loc['Armor'] = ['Cloth Armor',(0,2), 'Defense']
