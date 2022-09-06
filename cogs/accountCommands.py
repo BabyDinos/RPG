@@ -7,7 +7,7 @@ from enemyClass import *
 from playerClass import *
 import discord
 
-class Commands(commands.Cog):
+class accCommands(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
@@ -71,9 +71,8 @@ class Commands(commands.Cog):
             try:
                 self.message = await self.bot.wait_for('message', timeout = 20, check= lambda message: message.author == ctx.author and message.channel == ctx.channel)
                 if self.message:
-                    obj = sqlCommands.load(self.id, unit = 'player')
-                    obj.name = str(self.message.content)
-                    sqlCommands.save(self.id, obj, unit = 'player')
+                    res.Name = str(self.message.content)
+                    sqlCommands.save(self.id, res, unit = 'player')
                     await ctx.send('Your name has been changed to ' + str(self.message.content))
             except asyncio.TimeoutError: 
                 await ctx.send('Command Timedout')
@@ -85,10 +84,13 @@ class Commands(commands.Cog):
         if not res:
             await ctx.send('You are not registered')
         else:
+            playerinfo = playerInfo(res)
             embed = discord.Embed(
-                title = 'Player Info',
-                description = playerInfo(sqlCommands.load(self.id, unit='player'))
+                title = 'Character Info - ' + res.Name,
+                color = discord.Color.blue()
             )
+            embed.add_field(name = 'Infos', value = playerinfo[0])
+            embed.add_field(name = 'Equipment', value = playerinfo[1])
             await ctx.send(embed = embed)
 
     @commands.command()
@@ -98,7 +100,7 @@ class Commands(commands.Cog):
         if not res:
             await ctx.send('You are not registered')
         else:
-            msg = await ctx.send('Are you sure you want to delete?')
+            msg = await ctx.send('Are you sure you want to delete? - ' + res.Name)
             await msg.add_reaction("\U00002705")
             await msg.add_reaction("\U0000274C")
 
@@ -118,17 +120,23 @@ class Commands(commands.Cog):
                     await ctx.send('Deletion Cancelled')
 
     @commands.command()
-    async def fight(self, ctx):
+    async def inventory(self, ctx):
         self.id = str(ctx.author).split('#')[-1]
         res = sqlCommands.load(self.id, unit = 'player')
         if not res:
             await ctx.send('You are not registered')
         else:
-            enemy = Enemy('Golem')
-            while enemy.curHealth > 0 and sqlCommands.load(self.id, 'player').curHealth > 0:
-                pass
-
+            playerinv = playerInventory(res)
+            length = len(playerinv)
+            embed = discord.Embed(
+                title = 'Character Inventory - ' + res.Name,
+                color = discord.Color.blue()
+            )
+            for x in range(0,length,2):
+                embed.add_field(name = playerinv[x], value = playerinv[x+1])
+            await ctx.send(embed = embed)
+        pass
 
 
 async def setup(bot):
-    await bot.add_cog(Commands(bot))
+    await bot.add_cog(accCommands(bot))

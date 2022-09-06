@@ -31,10 +31,6 @@ async def on_ready():
         SqliteDict('player.sqlite')
     if not os.path.exists('enemy.sqlite'):
         SqliteDict('enemy.sqlite')
-    # async with aiosqlite.connect("main.db") as db:
-    #     async with db.cursor() as cursor:
-    #         await cursor.execute('CREATE TABLE IF NOT EXISTS Players (id INTEGER, username CHAR)')
-    #     await db.commit()
 
 async def main():
     await load()

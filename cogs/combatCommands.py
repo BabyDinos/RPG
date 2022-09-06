@@ -7,7 +7,7 @@ from enemyClass import *
 from playerClass import *
 import discord
 
-class combatCommands(commands.Cog):
+class comCommands(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
@@ -25,4 +25,4 @@ class combatCommands(commands.Cog):
                 pass
 
 async def setup(bot):
-    await bot.add_cog(combatCommands(bot))
+    await bot.add_cog(comCommands(bot))
