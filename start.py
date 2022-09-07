@@ -7,6 +7,7 @@ from config import *
 import os
 from sqlitedict import SqliteDict
 
+
 intents = nextcord.Intents.default()
 intents.members = True
 intents.message_content = True
@@ -21,17 +22,10 @@ async def on_ready():
     if not os.path.exists('enemy.sqlite'):
         SqliteDict('enemy.sqlite')
 
-async def load():
-    for filename in os.listdir("./cogs"):
-        if filename.endswith(".py"):
-            # cut off the .py from the file name
-            #await bot.load_extension(f"cogs.{filename[:-3]}")
-            await bot.load_extension('cogs.combatCommands')
-            print(filename[:-3] + ' has loaded')
+for filename in os.listdir("./cogs"):
+    if filename.endswith(".py"):
+        # cut off the .py from the file name
+        bot.load_extension(f"cogs.{filename[:-3]}")
+        print(filename[:-3] + ' has loaded')
 
-async def main():
-    await load()
-    await bot.start(TOKEN)
-
-asyncio.run(main())
-
+bot.run(TOKEN)

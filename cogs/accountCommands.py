@@ -202,8 +202,5 @@ class accCommands(commands.Cog):
                         await msg.edit(embed = createEmbed(currentPage))
         await ctx.message.delete()
 
-async def setup(bot):
-    try:
-        await bot.add_cog(accCommands(bot))
-    except Exception:
-        print(Exception)
+def setup(bot):
+    bot.add_cog(accCommands(bot))

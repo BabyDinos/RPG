@@ -54,8 +54,5 @@ class comCommands(commands.Cog):
         await ctx.message.delete()
 
 
-async def setup(bot):
-    try:
-        await bot.add_cog(comCommands(bot))
-    except Exception:
-        print(Exception)
+def setup(bot):
+    bot.add_cog(comCommands(bot))
