@@ -3,8 +3,8 @@ from sqlitedict import SqliteDict
 
 class sqlCommands:
 
-    def save(key, value, unit):
-        if unit == 'player':
+    def save(key, value, database):
+        if database == 'player':
             cache_file = 'player.sqlite'
         else:
             cache_file = 'enemy.sqlite'
@@ -15,8 +15,8 @@ class sqlCommands:
         except Exception as ex:
             print("Error during storing data: ", ex) 
 
-    def load(key, unit):
-        if unit == 'player':
+    def load(key, database):
+        if database == 'player':
             cache_file = 'player.sqlite'
         else:
             cache_file = 'enemy.sqlite'
@@ -30,8 +30,8 @@ class sqlCommands:
             print("Error during loading data: ", ex) 
             return False
 
-    def delete(key, unit):
-        if unit == 'player':
+    def delete(key, database):
+        if database == 'player':
             cache_file = 'player.sqlite'
         else:
             cache_file = 'enemy.sqlite'
