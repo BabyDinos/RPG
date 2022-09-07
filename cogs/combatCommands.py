@@ -1,11 +1,11 @@
-from discord.ext import commands
+from nextcord.ext import commands
 import asyncio
 import aiosqlite
 from sqlitedict import SqliteDict
 from sqliteCommands import sqlCommands
 from enemyClass import *
 from playerClass import *
-import discord
+import nextcord
 
 class comCommands(commands.Cog):
 
@@ -55,4 +55,7 @@ class comCommands(commands.Cog):
 
 
 async def setup(bot):
-    await bot.add_cog(comCommands(bot))
+    try:
+        await bot.add_cog(comCommands(bot))
+    except Exception:
+        print(Exception)

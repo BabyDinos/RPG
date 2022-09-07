@@ -1,11 +1,11 @@
-from discord.ext import commands
+from nextcord.ext import commands
 import asyncio
 import aiosqlite
 from sqlitedict import SqliteDict
 from sqliteCommands import sqlCommands
 from enemyClass import *
 from playerClass import *
-import discord
+import nextcord
 
 class accCommands(commands.Cog):
 
@@ -20,7 +20,7 @@ class accCommands(commands.Cog):
         if res:
             await ctx.send('This User is already linked to a pre-existing account', delete_after = 20)
         else:
-            embed = discord.Embed(
+            embed = nextcord.Embed(
                 title = 'Registering',
                 description = 'Enter your username: '
             )
@@ -29,7 +29,7 @@ class accCommands(commands.Cog):
             try:
                 self.username_message = await self.bot.wait_for('message', timeout = 20, check= lambda message: message.author == ctx.author and message.channel == ctx.channel)
 
-                embed = discord.Embed(
+                embed = nextcord.Embed(
                     title = 'Register',
                     description = 'Welcome ' + str(self.username_message.content)
                 )
@@ -51,7 +51,7 @@ class accCommands(commands.Cog):
                             sqlCommands.save(self.id, Mage(str(self.username_message.content)) , unit = 'player')
                         case _:
                             return ctx.send('Invalid Class')
-                    embed = discord.Embed(
+                    embed = nextcord.Embed(
                         title = 'Thanks for Registering ' + str(self.username_message.content),
                         description = 'Welcome to RPG!'
                     )
@@ -104,9 +104,9 @@ class accCommands(commands.Cog):
             await ctx.send('You are not registered', delete_after = 20)
         else:
             playerinfo = playerInfo(res)
-            embed = discord.Embed(
+            embed = nextcord.Embed(
                 title = 'Character Info - ' + res.Name,
-                color = discord.Color.blue()
+                color = 0x000ff
             )
             embed.add_field(name = 'Infos', value = playerinfo[0])
             embed.add_field(name = 'Equipment', value = playerinfo[1])
@@ -151,16 +151,59 @@ class accCommands(commands.Cog):
         if not res:
             await ctx.send('You are not registered', delete_after = 20)
         else:
+            buttons = ['\U000023EE','\U000025C0', '\U000025B6', '\U000023ED']
+            def check(reaction, user):
+                return user.id == ctx.author.id and reaction.message.channel.id == ctx.channel.id and str(reaction.emoji) in buttons
+
+            def createEmbed(pageNum = 0, inline = False):
+                pageNum = pageNum % len(list(playerinv))
+                pageTitle = list(playerinv)[pageNum]
+                embed = nextcord.Embed(color = 0x0080ff, title = pageTitle)
+                for key, val in playerinv[pageTitle].items():
+                    embed.add_field(name = key, value = val, inline = inline)
+                    embed.set_footer(text = f'Page {pageNum+1} of {len(list(playerinv))}')
+                return embed
+            
             playerinv = playerInventory(res)
-            length = len(playerinv)
-            embed = discord.Embed(
-                title = 'Character Inventory - ' + res.Name,
-                color = discord.Color.blue()
-            )
-            for x in range(0,length,2):
-                embed.add_field(name = playerinv[x], value = playerinv[x+1])
-            await ctx.send(embed = embed, delete_after = 120)
+            currentPage = 0
+            msg = await ctx.send(embed = createEmbed(pageNum = currentPage))
+
+            for button in buttons:
+                await msg.add_reaction(button)
+            while True:
+                try:
+                    reaction, user = await self.bot.wait_for('reaction_add', check = check, timeout = 120)
+                except asyncio.TimeoutError:
+                    embed = createEmbed(currentPage)
+                    embed.set_footer(text = "Command Timedout")
+                    await msg.clear_reactions()
+
+                else:
+                    previous_page = currentPage
+
+                    match str(reaction.emoji):
+
+                        case '\U000023EE':
+                            currentPage = 0
+                        case '\U000025C0':
+                            if currentPage > 0:
+                                currentPage -= 1
+                        case '\U000025B6':
+                            if currentPage < len(list(playerinv))-1:
+                                currentPage += 1
+                        case '\U000023ED':
+                            currentPage = len(list(playerinv))-1
+                        case _:
+                            pass
+                    for button in buttons:
+                        await msg.remove_reaction(button, ctx.author)
+
+                    if currentPage != previous_page:
+                        await msg.edit(embed = createEmbed(currentPage))
         await ctx.message.delete()
 
 async def setup(bot):
-    await bot.add_cog(accCommands(bot))
+    try:
+        await bot.add_cog(accCommands(bot))
+    except Exception:
+        print(Exception)

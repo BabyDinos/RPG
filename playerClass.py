@@ -11,7 +11,7 @@ class Player:
         self.inventory = pd.DataFrame(columns= ['Name','Description','Stats', 'Amount', 'Type'])
         self.equipment = pd.DataFrame(data = 'None', columns= ['Name','Stats','Type'],index = ['Weapon','Armor','Pet'])
         self.CurrentHealth = self.stats_dictionary['Max Health']
-        self.inventory.loc[len(self.inventory.index)] = ['Gold', 'Currency used in the market and for other applications', None, 100, 'Currency']
+        self.inventory.loc[len(self.inventory.index)] = ['Gold', 'Currency used in the market and for other applications', 'None', 100, 'Currency']
 
     def equip(self, equipmentName):
         if equipmentName in self.inventory.loc[:,'Name'].values:
@@ -39,20 +39,20 @@ class Warrior(Player):
         self.stats_dictionary['Attack'] = 14
         self.stats_dictionary['Defense'] = 14
         # eqipping warrior with base weapon and armor
-        self.inventory.loc[len(self.inventory.index)] = ['Wooden Sword','The most basic of swords',(0,3), 1, 'Attack']
-        self.inventory.loc[len(self.inventory.index)] = ['Cloth Armor','The most basic of armors',(0,2), 1, 'Defense']
-        self.equipment.loc['Weapon'] = ['Wooden Sword',(0,3), 'Attack']
-        self.equipment.loc['Armor'] = ['Cloth Armor',(0,2), 'Defense']
+        self.inventory.loc[len(self.inventory.index)] = ['Wooden Sword','The most basic of swords',['0', '3'], 1, 'Attack']
+        self.inventory.loc[len(self.inventory.index)] = ['Cloth Armor','The most basic of armors',['0','2'], 1, 'Defense']
+        self.equipment.loc['Weapon'] = ['Wooden Sword',['0', '3'], 'Attack']
+        self.equipment.loc['Armor'] = ['Cloth Armor',['0','2'], 'Defense']
 
 class Mage(Player):
     def __init__(self, name):
         Player.__init__(self, name)
         self.stats_dictionary['Magic Attack'] = 18
         self.stats_dictionary['Magic Defense'] = 12
-        self.inventory.loc[len(self.inventory.index)] = ['Wooden Staff','The most basic of staves',(0,3), 1, 'Magic Attack']
-        self.inventory.loc[len(self.inventory.index)] = ['Cloth Robe','The most basic of robes',(0,2), 1, 'Magic Defense']
-        self.equipment.loc['Weapon'] = ['Wooden Staff', (0,3), 'Magic Attack']
-        self.equipment.loc['Armor'] = ['Cloth Robe',(0,2), 'Magic Defense']
+        self.inventory.loc[len(self.inventory.index)] = ['Wooden Staff','The most basic of staves',['0', '3'], 1, 'Magic Attack']
+        self.inventory.loc[len(self.inventory.index)] = ['Cloth Robe','The most basic of robes',['0','2'], 1, 'Magic Defense']
+        self.equipment.loc['Weapon'] = ['Wooden Staff', ['0', '3'], 'Magic Attack']
+        self.equipment.loc['Armor'] = ['Cloth Robe',['0','2'], 'Magic Defense']
 
 def baseDifference(whatClass):
 
@@ -93,30 +93,35 @@ def playerInfo(player):
     arr.append(string)
     return arr
 
+# helper functions for the functions
+def toList(string):
+    if string != 'None':
+        string = string.split('-')
+        return string
+
+def toString(list):
+    if list != 'None':
+        return list[0] + ' - ' + list[1]
+    else:
+        return list
+
 def playerInventory(player):
-    
-    arr = []
-    pt = 0
-    length = len(player.inventory.index)
-    while pt < length:
-        string = ''
-        for r in range(len(player.inventory.columns)):
-            if player.inventory.iloc[:, r].name == 'Name':
-                arr.append(str(player.inventory.iloc[pt, r]))
+    dictionary = {}
+    for row in range(len(player.inventory.index)):
+        for colCount, colName in enumerate(player.inventory.columns):
+            if colName != 'Stats' and colCount > 0:
+                dictionary[name][colName] = player.inventory.iloc[row,colCount]
+            elif colName == 'Stats':
+                dictionary[name][colName] = toString(player.inventory.iloc[row,colCount])
             else:
-                string += player.inventory.iloc[:, r].name + ': ' + str(player.inventory.iloc[pt, r]) + '\n'
-        pt += 1
-        arr.append(string)
-    return arr
+                name = player.inventory.iloc[row,colCount]
+                dictionary[name] = {}
+
+    return dictionary
 
 def addItem(player, nameOfItem, amounts):
     #nameOfItem is a list of names of items
     #amounts is a list of same length as nameOfItem
-    def toList(string):
-        if string != 'None':
-            string = string.split('-')
-            return string
-
     df = pd.read_excel('items.xlsx', index_col = [0], converters={'Name':str, 'Description': str, 'Stats': str, 'Amount': int, 'Type': str})
     df['Stats'] = df.apply(lambda x: toList(x['Stats']), axis = 1)
 
@@ -131,3 +136,7 @@ def addItem(player, nameOfItem, amounts):
             player.inventory.loc[index,'Amount'] = amount
 
     return player.inventory
+
+
+dictionary = {1:{}, 2:{}}
+list(dictionary)
