@@ -40,7 +40,6 @@ class Warrior(Player):
         self.stats_dictionary['Defense'] = 14
         # eqipping warrior with base weapon and armor
         self.inventory.loc[len(self.inventory.index)] = ['Wooden Sword','The most basic of swords',(0,3), 1, 'Attack']
-        self.inventory.loc[len(self.inventory.index)] = ['Wooden Staff','The most basic of staves',(0,3), 1, 'Magic Attack']
         self.inventory.loc[len(self.inventory.index)] = ['Cloth Armor','The most basic of armors',(0,2), 1, 'Defense']
         self.equipment.loc['Weapon'] = ['Wooden Sword',(0,3), 'Attack']
         self.equipment.loc['Armor'] = ['Cloth Armor',(0,2), 'Defense']
@@ -95,6 +94,7 @@ def playerInfo(player):
     return arr
 
 def playerInventory(player):
+    
     arr = []
     pt = 0
     length = len(player.inventory.index)
@@ -108,3 +108,26 @@ def playerInventory(player):
         pt += 1
         arr.append(string)
     return arr
+
+def addItem(player, nameOfItem, amounts):
+    #nameOfItem is a list of names of items
+    #amounts is a list of same length as nameOfItem
+    def toList(string):
+        if string != 'None':
+            string = string.split('-')
+            return string
+
+    df = pd.read_excel('items.xlsx', index_col = [0], converters={'Name':str, 'Description': str, 'Stats': str, 'Amount': int, 'Type': str})
+    df['Stats'] = df.apply(lambda x: toList(x['Stats']), axis = 1)
+
+    for name, amount in zip(nameOfItem, amounts):
+        if name in player.inventory.loc[:,'Name'].tolist():
+            index = player.inventory.index[player.inventory['Name'] == name].tolist()
+            newVal = int(player.inventory.loc[index,'Amount']) + amount
+            player.inventory.loc[index, 'Amount'] = newVal
+        else:
+            index = player.inventory.index
+            player.inventory.loc[index] = df.loc[name]
+            player.inventory.loc[index,'Amount'] = amount
+
+    return player.inventory
