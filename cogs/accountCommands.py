@@ -6,6 +6,8 @@ from sqliteCommands import sqlCommands
 from enemyClass import *
 from playerClass import *
 import nextcord
+from nextcord.ui import Button, View
+import math
 
 class AccountCommands(commands.Cog):
 
@@ -150,55 +152,66 @@ class AccountCommands(commands.Cog):
         if not player:
             await ctx.send('You are not registered', delete_after = 20)
         else:
-            buttons = ['\U000023EE','\U000025C0', '\U000025B6', '\U000023ED']
-            def check(reaction, user):
-                return user.id == ctx.author.id and reaction.message.channel.id == ctx.channel.id and str(reaction.emoji) in buttons
+
+            playerinv = playerInventory(player)
 
             def createEmbed(pageNum = 0, inline = False):
-                pageNum = pageNum % len(list(playerinv))
+                pageNum = pageNum % (len(list(playerinv)))
                 pageTitle = list(playerinv)[pageNum]
-                embed = nextcord.Embed(color = 0x0080ff, title = pageTitle)
+                embed = nextcord.Embed(color = nextcord.Color.gold(), title = pageTitle)
                 for key, val in playerinv[pageTitle].items():
                     embed.add_field(name = key, value = val, inline = inline)
                     embed.set_footer(text = f'Page {pageNum+1} of {len(list(playerinv))}')
                 return embed
             
-            playerinv = playerInventory(player)
             currentPage = 0
-            msg = await ctx.send(embed = createEmbed(pageNum = currentPage))
 
-            for button in buttons:
-                await msg.add_reaction(button)
-            while True:
-                try:
-                    reaction, user = await self.bot.wait_for('reaction_add', check = check, timeout = 120)
-                except asyncio.TimeoutError:
-                    embed = createEmbed(currentPage)
-                    embed.set_footer(text = "Command Timedout")
-                    await msg.clear_reactions()
+            async def next_callback(interaction):
+                nonlocal currentPage, sent_msg
+                currentPage += 1
+                
+                await sent_msg.edit(embed = createEmbed(pageNum = currentPage), view = myview)
+                await interaction.response.defer()
 
-                else:
-                    previous_page = currentPage
+            async def previous_callback(interaction):
+                nonlocal currentPage, sent_msg
+                currentPage -= 1
+                
+                await sent_msg.edit(embed = createEmbed(pageNum = currentPage), view = myview)
+                await interaction.response.defer()
 
-                    match str(reaction.emoji):
+            async def fast_next_callback(interaction):
+                nonlocal currentPage, sent_msg
+                currentPage = len(list(playerinv))-1
 
-                        case '\U000023EE':
-                            currentPage = 0
-                        case '\U000025C0':
-                            if currentPage > 0:
-                                currentPage -= 1
-                        case '\U000025B6':
-                            if currentPage < len(list(playerinv))-1:
-                                currentPage += 1
-                        case '\U000023ED':
-                            currentPage = len(list(playerinv))-1
-                        case _:
-                            pass
-                    for button in buttons:
-                        await msg.remove_reaction(button, ctx.author)
+                await sent_msg.edit(embed = createEmbed(pageNum = currentPage), view = myview)
+                await interaction.response.defer()
 
-                    if currentPage != previous_page:
-                        await msg.edit(embed = createEmbed(currentPage))
+            async def fast_previous_callback(interaction):
+                nonlocal currentPage, sent_msg
+                currentPage = 0
+
+                await sent_msg.edit(embed = createEmbed(pageNum = currentPage), view = myview)
+                await interaction.response.defer()
+
+            nextButton = Button(label = '>', style = nextcord.ButtonStyle.blurple)
+            nextButton.callback = next_callback
+            previousButton = Button(label = '<', style = nextcord.ButtonStyle.blurple)
+            previousButton.callback = previous_callback
+            fastNextButton = Button(label = '>>', style = nextcord.ButtonStyle.blurple)
+            fastNextButton.callback = fast_next_callback
+            fastPreviousButton = Button(label = '<<', style = nextcord.ButtonStyle.blurple)
+            fastPreviousButton.callback = fast_previous_callback
+
+            myview = View(timeout = 5)
+            myview.add_item(fastPreviousButton)
+            myview.add_item(previousButton)
+            myview.add_item(nextButton)
+            myview.add_item(fastNextButton)
+            sent_msg = await ctx.send(embed = createEmbed(pageNum = currentPage), view = myview)
+            
+
+            
         await ctx.message.delete()
 
 def setup(bot):

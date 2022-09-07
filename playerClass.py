@@ -137,6 +137,5 @@ def addItem(player, nameOfItem, amounts):
 
     return player.inventory
 
-
-dictionary = {1:{}, 2:{}}
-list(dictionary)
+player = Warrior('Thuhij')
+playerInventory(player)
