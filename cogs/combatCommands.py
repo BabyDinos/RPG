@@ -11,23 +11,33 @@ class comCommands(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-
+    
+    #cooldown time should be same as timeout time for embed
     @commands.command()
+    @commands.cooldown(1, 30, commands.BucketType.user)
     async def fight(self, ctx):
         self.id = str(ctx.author).split('#')[-1]
-        res = sqlCommands.load(self.id, database = 'player')
-        if not res:
+        player = sqlCommands.load(self.id, database = 'player')
+        if not player:
             await ctx.send('You are not registered', delete_after = 20)
         else:
-            await ctx.send('Adding Gold', delete_after = 20)
-            res.inventory = addItem(res, ['Gold', 'Gold'], [5, 10])
-            sqlCommands.save(self.id, res, database = 'player')
+            golem = Golem('Golem',[1,5],[1,3],[2,5],[1,2],[2,5],[1,2],2, 2, 2)
+            player.CurrentHealth = 0
+            sqlCommands.save(self.id, player, database= 'player')
 
-            # enemy = Enemy('Golem')
-            # player = sqlCommands.load(self.id, databases = 'player')
-            # while enemy.curHealth > 0 and player.curHealth > 0:
-            #     pass
-        ctx.message.delete()
+            await ctx.send(str(player.CurrentHealth))
+            await asyncio.sleep(10)
+
+            player.CurrentHealth = 10
+            await ctx.send(str(player.CurrentHealth))
+        await ctx.message.delete()
+
+    @fight.error
+    async def on_error(self, ctx, error):
+        if isinstance(error, commands.CommandOnCooldown):
+            await ctx.send('This command is ratelimited, please try again in {:.2f}s'.format(error.retry_after), delete_after = 20)
+        else:
+            raise error
 
     @commands.command()
     async def equip(self, ctx):

@@ -20,6 +20,16 @@ class Enemy:
             attack = random.randint(0, self.MagicAttack)
             return {'Magic Attack':attack}
 
+    def mobDrop(self, listofdrops, listofdropweights, dropnumber):
+        decision = random.choices(listofdrops, weights = listofdropweights, k = dropnumber)
+        mobdrops = []
+        for decisionindex in range(len(decision)):
+            for dropindex in range(len(listofdrops)):
+                if decision[decisionindex] == listofdrops[dropindex]:
+                    mobdrops.append(listofdrops[dropindex])
+        return mobdrops
+
+
 
 
 class Golem(Enemy):
@@ -31,3 +41,6 @@ class Golem(Enemy):
         self.MaxHealth += random.randint(0, bonushealth)
         self.CurrentHealth = self.MaxHealth
 
+golem = Golem('Thuhij',[0,5],[0,5],[0,5],[0,5],[0,5],[0,5],2, 2, 2)
+
+golem.mobDrop(listofdrops=['Gold','Weapon','Stones','Tree'], listofdropweights=[5, 5, 5, 5], dropnumber=5)

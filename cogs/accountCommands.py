@@ -209,7 +209,6 @@ class AccountCommands(commands.Cog):
             myview.add_item(nextButton)
             myview.add_item(fastNextButton)
             sent_msg = await ctx.send(embed = createEmbed(pageNum = currentPage), view = myview)
-
             timed_out = await myview.wait()
             if timed_out:
                 await sent_msg.delete()

@@ -25,11 +25,13 @@ class Player:
         else:
             return False
 
-    def attack(self):
-        pass
+    def attackSpeed(self, enemy):
+        decision = random.choices(['Player','Enemy'], weights = [self.stats_dictionary['Attack Speed'], enemy.AttackSpeed])
 
-    def defend(self):
-        pass
+        if decision == ['Player']:
+            return 'Player Goes'
+        else:
+            return 'Enemy Goes'
 
 class Warrior(Player):
     def __init__(self, name):
@@ -54,6 +56,7 @@ class Mage(Player):
         self.equipment.loc['Weapon'] = ['Wooden Staff', ['0', '3'], 'Magic Attack']
         self.equipment.loc['Armor'] = ['Cloth Robe',['0','2'], 'Magic Defense']
 
+# function converts base stats of classes into formated string to be displayed in nextcord.embed
 def baseDifference(whatClass):
 
     string = ''
@@ -79,6 +82,7 @@ def baseDifference(whatClass):
                 string += x + ': ' + str(b) + ' (-' + str(y-b) + ')' + '\n'
     return string
 
+# function creates an array that stores formated string of player equipment to be displayed in nextcord.embed
 def playerInfo(player):
     # arr first string will be Stats, next will be equipment, and last will be inventory
     arr = []
@@ -105,6 +109,7 @@ def toString(list):
     else:
         return list
 
+# Converts dataframe inventory to a nested dictionary for nextcord to display 
 def playerInventory(player):
     dictionary = {}
     for row in range(len(player.inventory.index)):
@@ -119,6 +124,7 @@ def playerInventory(player):
 
     return dictionary
 
+# function for administrators to add items from an excel file into inventories. Will be used to add drops to players inventories
 def addItem(player, nameOfItem, amounts):
     #nameOfItem is a list of names of items
     #amounts is a list of same length as nameOfItem
@@ -137,5 +143,3 @@ def addItem(player, nameOfItem, amounts):
 
     return player.inventory
 
-player = Warrior('Thuhij')
-playerInventory(player)
