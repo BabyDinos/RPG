@@ -158,7 +158,7 @@ class AccountCommands(commands.Cog):
             def createEmbed(pageNum = 0, inline = False):
                 pageNum = pageNum % (len(list(playerinv)))
                 pageTitle = list(playerinv)[pageNum]
-                embed = nextcord.Embed(color = nextcord.Color.gold(), title = pageTitle)
+                embed = nextcord.Embed(color = nextcord.Color.dark_orange(), title = pageTitle)
                 for key, val in playerinv[pageTitle].items():
                     embed.add_field(name = key, value = val, inline = inline)
                     embed.set_footer(text = f'Page {pageNum+1} of {len(list(playerinv))}')
@@ -203,16 +203,17 @@ class AccountCommands(commands.Cog):
             fastPreviousButton = Button(label = '<<', style = nextcord.ButtonStyle.blurple)
             fastPreviousButton.callback = fast_previous_callback
 
-            myview = View(timeout = 5)
+            myview = View(timeout = 120)
             myview.add_item(fastPreviousButton)
             myview.add_item(previousButton)
             myview.add_item(nextButton)
             myview.add_item(fastNextButton)
             sent_msg = await ctx.send(embed = createEmbed(pageNum = currentPage), view = myview)
-            
 
-            
-        await ctx.message.delete()
+            timed_out = await myview.wait()
+            if timed_out:
+                await sent_msg.delete()
+                await ctx.message.delete()
 
 def setup(bot):
     bot.add_cog(AccountCommands(bot))
