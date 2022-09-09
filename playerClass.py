@@ -6,13 +6,15 @@ import math
 class Player:
     def __init__(self, name):
         self.Name = name
-        self.stats_dictionary = {'Max Health' : 10, 'Attack':5,
-                        'Magic Attack':5,'Defense':5,
-                        'Magic Defense': 5, 'Attack Speed':1}
-        self.inventory = pd.DataFrame(columns= ['Name','Description','Stats', 'Amount', 'Type'])
-        self.equipment = pd.DataFrame(data = 'None', columns= ['Name','Stats','Type'],index = ['Weapon','Armor','Pet'])
+        self.Level = 1
+        self.CurrentLevel = 0
+        self.MaxLevel = 10
+        self.stats_dictionary = {'Max Health' : 10, 'Attack':5,'Magic Attack':5,'Defense':5,'Magic Defense': 5, 'Attack Speed':1}
+        self.inventory = pd.DataFrame(columns= ['Name','Description','Stats', 'Amount', 'Type'], dtype=object)
+        self.equipment = pd.DataFrame(data = 'None', columns= ['Name','Stats','Type'],index = ['Weapon','Armor','Pet'], dtype=object) 
         self.CurrentHealth = self.stats_dictionary['Max Health']
-        self.inventory.loc[len(self.inventory.index)] = ['Gold', 'Currency used in the market and for other applications', 'None', 100, 'Currency']
+        self.inventory = addItem(self, ['Gold'],[100])
+        #self.inventory.loc[len(self.inventory.index)] = ['Gold', 'Currency used in the market and for other applications', 'None', 100, 'Currency']
 
     def equip(self, equipmentName):
         if equipmentName in self.inventory.loc[:,'Name'].values:
@@ -52,6 +54,13 @@ class Player:
         self.stats_dictionary['Magic Attack'] = int(math.ceil(self.stats_dictionary['Magic Attack'] * 1.5))
         return self.stats_dictionary['Attack'] - temp_attack, self.stats_dictionary['Magic Attack'] - temp_magic_attack
 
+    def levelUp(self):
+        while self.CurrentLevel >= self.MaxLevel:
+            self.CurrentLevel  = self.CurrentLevel - self.MaxLevel
+            self.MaxLevel = int(self.MaxLevel * 1.5)
+            self.Level += 1
+
+
 class Warrior(Player):
     def __init__(self, name):
         Player.__init__(self, name)
@@ -60,10 +69,9 @@ class Warrior(Player):
         self.stats_dictionary['Attack'] = 14
         self.stats_dictionary['Defense'] = 14
         # eqipping warrior with base weapon and armor
-        self.inventory.loc[len(self.inventory.index)] = ['Wooden Sword','The most basic of swords',['0', '3'], 1, 'Attack']
-        self.inventory.loc[len(self.inventory.index)] = ['Cloth Armor','The most basic of armors',['0','2'], 1, 'Defense']
-        self.equipment.loc['Weapon'] = ['Wooden Sword',['0', '3'], 'Attack']
-        self.equipment.loc['Armor'] = ['Cloth Armor',['0','2'], 'Defense']
+        self.inventory = addItem(self, ['Wooden Sword','Cloth Armor'], [1,1])
+        self.equip('Wooden Sword')
+        self.equip('Cloth Armor')
 
 class Mage(Player):
     def __init__(self, name):
@@ -84,7 +92,7 @@ def toList(string):
 # function for administrators to add items from an excel file into inventories. Will be used to add drops to players inventories
 def addItem(player, nameOfItem, amounts):
     #nameOfItem is a list of names of items
-    #amounts is a list of same length as nameOfItem
+    #amounts is a list of same length as nameOfItems
     df = pd.read_excel('items.xlsx', index_col = [0], converters={'Name':str, 'Description': str, 'Stats': str, 'Amount': int, 'Type': str})
     df['Stats'] = df.apply(lambda x: toList(x['Stats']), axis = 1)
 
@@ -101,4 +109,6 @@ def addItem(player, nameOfItem, amounts):
 
     return player.inventory
 
+warrior = Warrior('Bob')
 
+warrior.inventory.dtypes

@@ -50,7 +50,10 @@ class AccountCommands(commands.Cog):
         arr = []
         string = ''
         for x, y in player.stats_dictionary.items():
-            string += x + ': ' + str(y) + '\n'  
+            if x == 'Max Health':
+                string += 'Health: ' + str(player.CurrentHealth) + '/' + str(y) + '\n' 
+            else:
+                string += x + ': ' + str(y) + '\n'  
         arr.append(string)
         string = ''
         for r in range(len(player.equipment.index)):
@@ -61,7 +64,7 @@ class AccountCommands(commands.Cog):
 
     # helper functions for the functions
     def toString(self, list):
-        if list != 'None':
+        if list != None:
             return list[0] + ' - ' + list[1]
         else:
             return list
@@ -172,7 +175,7 @@ class AccountCommands(commands.Cog):
         else:
             playerinfo = self.playerInfo(player)
             embed = nextcord.Embed(
-                title = 'Character Info - ' + player.Name,
+                title = 'Character Info - ' + player.Name + 'Lvl: ' + str(player.Level),
                 color = 0x000ff
             )
             embed.add_field(name = 'Infos', value = playerinfo[0])

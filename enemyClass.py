@@ -1,7 +1,7 @@
 import random
 from collections import Counter
 import math
-from statistics import geometric_mean
+import numpy as np
 
 class Enemy:
     def __init__(self, name, maxhealthrange, attackrange, defenserange, magicattackrange, magicdefenserange, attackspeedrange):
@@ -12,6 +12,9 @@ class Enemy:
         self.Defense = random.randint(defenserange[0], defenserange[1])
         self.MagicDefense = random.randint(magicdefenserange[0], magicdefenserange[1])
         self.AttackSpeed = random.randint(attackspeedrange[0], attackspeedrange[1])
+        self.ListOfDrops = []
+        self.ListOfDropWeights = []
+        self.DropNumber = 0
 
 
     def enemyAttack(self):
@@ -45,6 +48,8 @@ class Enemy:
 
         return [Counter(mobdrops).keys(), Counter(mobdrops).values()]
 
+    def xpDrop(self):
+        return self.DropNumber
 class Golem(Enemy):
     def __init__(self, name, maxhealthrange, attackrange, defenserange, magicattackrange, magicdefenserange, attackspeedrange, bonusdefense, bonusmagicdefense, bonushealth):
         Enemy.__init__(self, name, maxhealthrange, attackrange, defenserange, magicattackrange, magicdefenserange, attackspeedrange)
@@ -52,8 +57,12 @@ class Golem(Enemy):
         self.Defense += random.randint(0, bonusdefense)
         self.MagicDefense += random.randint(0,bonusmagicdefense)
         self.CurrentHealth += random.randint(0, bonushealth)
+        self.ListOfDrops = ['Gold','Stone','Gem']
+        self.ListOfDropWeights = [5, 5, 1]
+        self.DropNumber = int(np.mean([x for x in vars(self).values() if type(x) == int]))
 
-#golem = Golem('Thuhij',[0,5],[0,5],[0,5],[0,5],[0,5],[0,5],2, 2, 2)
+golem = Golem('Thuhij',[0,5],[0,5],[0,5],[0,5],[0,5],[0,5],2, 2, 2)
 
 #drops = golem.mobDrop(['Gold','Stone','Gem'],[5,5,0],dropnumber=5)
 
+vars(golem)
