@@ -27,7 +27,7 @@ class comCommands(commands.Cog):
         if self.id in self.fighttime:
             await ctx.send('You are dead. Wait {:.2f} seconds until respawn'.format(self.fighttime[self.id]-time.time()), delete_after = 10)
         else:
-            enemy = Golem('Golem',[1,5],[1,50],[2,5],[1,2],[2,5],[1,2],2, 2, 2)
+            enemy = Golem('Golem',[1,5],[1,2],[2,5],[1,2],[2,5],[1,2],2, 2, 2)
             self.deathtimer = 120
             # use to store the original dictionary
             player_total_dictionary = player.stats_dictionary.copy()
@@ -176,6 +176,17 @@ class comCommands(commands.Cog):
 
             if enemy.CurrentHealth <= 0:
                 await ctx.send('Player ' + player.Name + ' has defeated ' + enemy.Name, delete_after = 20)
+                average_stats = 0
+                for key, val in enemy_dictionary.items():
+                    if key != 'Name':
+                        average_stats += val
+                average_stats = int(average_stats / (len(enemy_dictionary)-1))
+                enemy_drops = enemy.mobDrop(['Gold','Stone','Gem'], [5, 5, 1], dropnumber = average_stats)
+                player.inventory = addItem(player, enemy_drops[0], enemy_drops[1])
+                summary_embed = nextcord.Embed(title = player.Name + ' Rewards')
+                for x, y in zip(enemy_drops[0], enemy_drops[1]):
+                    summary_embed.add_field(name = x, value = y)
+                await ctx.send(embed = summary_embed, delete_after = 20)
             if player.CurrentHealth <= 0:
                 await ctx.send('Player ' + player.Name + ' has lost to ' + enemy.Name, delete_after = 20)
                 self.fighttime[self.id] = time.time() + self.deathtimer

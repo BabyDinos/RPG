@@ -43,7 +43,7 @@ class Enemy:
                 if decision[decisionindex] == listofdrops[dropindex]:
                     mobdrops.append(listofdrops[dropindex])
 
-        return Counter(mobdrops).keys(), Counter(mobdrops).values()
+        return [Counter(mobdrops).keys(), Counter(mobdrops).values()]
 
 class Golem(Enemy):
     def __init__(self, name, maxhealthrange, attackrange, defenserange, magicattackrange, magicdefenserange, attackspeedrange, bonusdefense, bonusmagicdefense, bonushealth):
@@ -54,4 +54,6 @@ class Golem(Enemy):
         self.CurrentHealth += random.randint(0, bonushealth)
 
 #golem = Golem('Thuhij',[0,5],[0,5],[0,5],[0,5],[0,5],[0,5],2, 2, 2)
+
+#drops = golem.mobDrop(['Gold','Stone','Gem'],[5,5,0],dropnumber=5)
 

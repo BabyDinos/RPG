@@ -94,8 +94,9 @@ def addItem(player, nameOfItem, amounts):
             newVal = int(player.inventory.loc[index,'Amount']) + amount
             player.inventory.loc[index, 'Amount'] = newVal
         else:
-            index = player.inventory.index
+            index = len(player.inventory.index)
             player.inventory.loc[index] = df.loc[name]
+            player.inventory.loc[index,'Name'] = name
             player.inventory.loc[index,'Amount'] = amount
 
     return player.inventory
