@@ -1,12 +1,13 @@
 import random
 import pandas as pd
+import math
 
 
 class Player:
     def __init__(self, name):
         self.Name = name
         self.stats_dictionary = {'Max Health' : 10, 'Attack':5,
-                        'Magic Attack':5,'Defense ':5,
+                        'Magic Attack':5,'Defense':5,
                         'Magic Defense': 5, 'Attack Speed':1}
         self.inventory = pd.DataFrame(columns= ['Name','Description','Stats', 'Amount', 'Type'])
         self.equipment = pd.DataFrame(data = 'None', columns= ['Name','Stats','Type'],index = ['Weapon','Armor','Pet'])
@@ -28,10 +29,28 @@ class Player:
     def attackSpeed(self, enemy):
         decision = random.choices(['Player','Enemy'], weights = [self.stats_dictionary['Attack Speed'], enemy.AttackSpeed])
 
-        if decision == ['Player']:
+        if decision[0] == 'Player':
             return 'Player Goes'
         else:
             return 'Enemy Goes'
+
+    def attack(self):
+        return random.randint(0, self.stats_dictionary['Attack'])
+    
+    def magicAttack(self):
+        return random.randint(0, self.stats_dictionary['Magic Attack'])
+
+    def defend(self):
+        currentdefense = random.randint(0, self.stats_dictionary['Defense'])
+        currentmagicdefense = random.randint(0, self.stats_dictionary['Magic Defense'])
+        return {'Defense': currentdefense, 'Magic Defense': currentmagicdefense}
+
+    def powerUp(self):
+        temp_attack = self.stats_dictionary['Attack']
+        temp_magic_attack = self.stats_dictionary['Magic Attack']
+        self.stats_dictionary['Attack'] = int(math.ceil(self.stats_dictionary['Attack'] * 1.5))
+        self.stats_dictionary['Magic Attack'] = int(math.ceil(self.stats_dictionary['Magic Attack'] * 1.5))
+        return self.stats_dictionary['Attack'] - temp_attack, self.stats_dictionary['Magic Attack'] - temp_magic_attack
 
 class Warrior(Player):
     def __init__(self, name):
@@ -56,73 +75,11 @@ class Mage(Player):
         self.equipment.loc['Weapon'] = ['Wooden Staff', ['0', '3'], 'Magic Attack']
         self.equipment.loc['Armor'] = ['Cloth Robe',['0','2'], 'Magic Defense']
 
-# function converts base stats of classes into formated string to be displayed in nextcord.embed
-def baseDifference(whatClass):
 
-    string = ''
-    player = Player('name')
-    warrior = Warrior('name')
-    mage = Mage('name')
-
-    if whatClass == 'Warrior':
-        for (x, y), (a,b) in zip(warrior.stats_dictionary.items(), player.stats_dictionary.items()):
-            if y-b == 0:
-                string += x + ': ' + str(b) + '\n'
-            elif y - b > 0:
-                string += x + ': ' + str(b) + ' (+' + str(y-b) + ')' + '\n'
-            else:
-                string += x + ': ' + str(b) + ' (-' + str(y-b) + ')' + '\n'
-    elif whatClass == 'Mage':
-        for (x, y), (a,b) in zip(mage.stats_dictionary.items(), player.stats_dictionary.items()):
-            if y-b == 0:
-                string += x + ': ' + str(b) + '\n'
-            elif y - b > 0:
-                string += x + ': ' + str(b) + ' (+' + str(y-b) + ')' + '\n'
-            else:
-                string += x + ': ' + str(b) + ' (-' + str(y-b) + ')' + '\n'
-    return string
-
-# function creates an array that stores formated string of player equipment to be displayed in nextcord.embed
-def playerInfo(player):
-    # arr first string will be Stats, next will be equipment, and last will be inventory
-    arr = []
-    string = ''
-    for x, y in player.stats_dictionary.items():
-        string += x + ': ' + str(y) + '\n'  
-    arr.append(string)
-    string = ''
-    for r in range(len(player.equipment.index)):
-        player.equipment.iloc[r,0]
-        string += player.equipment.iloc[r].name + ': ' + str(player.equipment.iloc[r,0]) + '\n'
-    arr.append(string)
-    return arr
-
-# helper functions for the functions
 def toList(string):
     if string != 'None':
         string = string.split('-')
         return string
-
-def toString(list):
-    if list != 'None':
-        return list[0] + ' - ' + list[1]
-    else:
-        return list
-
-# Converts dataframe inventory to a nested dictionary for nextcord to display 
-def playerInventory(player):
-    dictionary = {}
-    for row in range(len(player.inventory.index)):
-        for colCount, colName in enumerate(player.inventory.columns):
-            if colName != 'Stats' and colCount > 0:
-                dictionary[name][colName] = player.inventory.iloc[row,colCount]
-            elif colName == 'Stats':
-                dictionary[name][colName] = toString(player.inventory.iloc[row,colCount])
-            else:
-                name = player.inventory.iloc[row,colCount]
-                dictionary[name] = {}
-
-    return dictionary
 
 # function for administrators to add items from an excel file into inventories. Will be used to add drops to players inventories
 def addItem(player, nameOfItem, amounts):
@@ -142,4 +99,5 @@ def addItem(player, nameOfItem, amounts):
             player.inventory.loc[index,'Amount'] = amount
 
     return player.inventory
+
 

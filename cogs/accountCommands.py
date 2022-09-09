@@ -18,8 +18,72 @@ class AccountCommands(commands.Cog):
         self.id = str(ctx.author).split('#')[-1]
         return sqlCommands.load(self.id, database = 'player')
 
+    # function converts base stats of classes into formated string to be displayed in nextcord.embed
+    def baseDifference(self, whatClass):
+
+        string = ''
+        player = Player('name')
+        warrior = Warrior('name')
+        mage = Mage('name')
+
+        if whatClass == 'Warrior':
+            for (x, y), (a,b) in zip(warrior.stats_dictionary.items(), player.stats_dictionary.items()):
+                if y-b == 0:
+                    string += x + ': ' + str(b) + '\n'
+                elif y - b > 0:
+                    string += x + ': ' + str(b) + ' (+' + str(y-b) + ')' + '\n'
+                else:
+                    string += x + ': ' + str(b) + ' (-' + str(y-b) + ')' + '\n'
+        elif whatClass == 'Mage':
+            for (x, y), (a,b) in zip(mage.stats_dictionary.items(), player.stats_dictionary.items()):
+                if y-b == 0:
+                    string += x + ': ' + str(b) + '\n'
+                elif y - b > 0:
+                    string += x + ': ' + str(b) + ' (+' + str(y-b) + ')' + '\n'
+                else:
+                    string += x + ': ' + str(b) + ' (-' + str(y-b) + ')' + '\n'
+        return string
+
+    # function creates an array that stores formated string of player equipment to be displayed in nextcord.embed
+    def playerInfo(self, player):
+        # arr first string will be Stats, next will be equipment, and last will be inventory
+        arr = []
+        string = ''
+        for x, y in player.stats_dictionary.items():
+            string += x + ': ' + str(y) + '\n'  
+        arr.append(string)
+        string = ''
+        for r in range(len(player.equipment.index)):
+            player.equipment.iloc[r,0]
+            string += player.equipment.iloc[r].name + ': ' + str(player.equipment.iloc[r,0]) + '\n'
+        arr.append(string)
+        return arr
+
+    # helper functions for the functions
+    def toString(self, list):
+        if list != 'None':
+            return list[0] + ' - ' + list[1]
+        else:
+            return list
+
+    # Converts dataframe inventory to a nested dictionary for nextcord to display 
+    def playerInventory(self, player):
+        dictionary = {}
+        for row in range(len(player.inventory.index)):
+            for colCount, colName in enumerate(player.inventory.columns):
+                if colName != 'Stats' and colCount > 0:
+                    dictionary[name][colName] = player.inventory.iloc[row,colCount]
+                elif colName == 'Stats':
+                    dictionary[name][colName] = self.toString(player.inventory.iloc[row,colCount])
+                else:
+                    name = player.inventory.iloc[row,colCount]
+                    dictionary[name] = {}
+
+        return dictionary
+
+
     @commands.command()
-    async def register(self, ctx):
+    async def register(self, ctx): #uses baseDifference
         # checking if player exists already, if they do deny re-registering
         player = self.playerExists(ctx)
         if player:
@@ -39,9 +103,9 @@ class AccountCommands(commands.Cog):
                     description = 'Welcome ' + str(self.username_message.content)
                 )
                 embed.add_field(name = 'Warrior', value = '''Warriors are a class that specializes in swords and deal physical damage\n
-                                        {}'''.format(baseDifference('Warrior')))
+                                        {}'''.format(self.baseDifference('Warrior')))
                 embed.add_field(name = 'Mage', value = '''Mages are a class that specializes in staves and deal magical damage\n
-                                        {}'''.format(baseDifference('Mage')))          
+                                        {}'''.format(self.baseDifference('Mage')))          
                 embed.set_footer(text = 'Choose your class: ')      
 
                 await self.bot_message.edit(embed = embed)
@@ -101,12 +165,12 @@ class AccountCommands(commands.Cog):
         await ctx.message.delete()
 
     @commands.command()
-    async def info(self, ctx):
+    async def info(self, ctx): #uses playerInfo
         player = self.playerExists(ctx)
         if not player:
             await ctx.send('You are not registered', delete_after = 20)
         else:
-            playerinfo = playerInfo(player)
+            playerinfo = self.playerInfo(player)
             embed = nextcord.Embed(
                 title = 'Character Info - ' + player.Name,
                 color = 0x000ff
@@ -147,13 +211,13 @@ class AccountCommands(commands.Cog):
         await ctx.message.delete()
 
     @commands.command()
-    async def inventory(self, ctx):
+    async def inventory(self, ctx): #uses playerInventory
         player = self.playerExists(ctx)
         if not player:
             await ctx.send('You are not registered', delete_after = 20)
         else:
 
-            playerinv = playerInventory(player)
+            playerinv = self.playerInventory(player)
 
             def createEmbed(pageNum = 0, inline = False):
                 pageNum = pageNum % (len(list(playerinv)))
