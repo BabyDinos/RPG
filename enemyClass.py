@@ -18,13 +18,9 @@ class Enemy:
 
 
     def enemyAttack(self):
-        decision = random.choices(['Attack','Magic Attack'], weights = [self.Attack, self.MagicAttack])
-        if decision == ['Attack']:
-            attack = random.randint(0, self.Attack)
-            return {'Attack':attack}
-        else:
-            attack = random.randint(0, self.MagicAttack)
-            return {'Magic Attack':attack}
+        attack = random.randint(0, self.Attack)
+        magicattack = random.randint(0, self.MagicAttack)
+        return {'Attack':attack, 'Magic Attack':magicattack}
 
     def enemyDefend(self):
         currentdefense = random.randint(0, self.Defense)
@@ -32,11 +28,10 @@ class Enemy:
         return {'Defense': currentdefense, 'Magic Defense': currentmagicdefense}
 
     def enemyPowerUp(self):
-        temp_attack = self.Attack
-        temp_magic_attack = self.MagicAttack
         self.Attack = int(math.ceil(self.Attack * 1.5))
         self.MagicAttack = int(math.ceil(self.MagicAttack * 1.5))
-        return self.Attack - temp_attack, self.MagicAttack-temp_magic_attack
+        self.AttackSpeed = int(math.ceil(self.AttackSpeed * 1.5))
+        return self.Attack, self.MagicAttack, self.AttackSpeed
 
     def mobDrop(self, listofdrops, listofdropweights, dropnumber):
         decision = random.choices(listofdrops, weights = listofdropweights, k = dropnumber)
@@ -50,6 +45,7 @@ class Enemy:
 
     def xpDrop(self):
         return self.DropNumber
+
 class Golem(Enemy):
     def __init__(self, name, maxhealthrange, attackrange, defenserange, magicattackrange, magicdefenserange, attackspeedrange, bonusdefense, bonusmagicdefense, bonushealth):
         Enemy.__init__(self, name, maxhealthrange, attackrange, defenserange, magicattackrange, magicdefenserange, attackspeedrange)

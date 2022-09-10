@@ -3,18 +3,24 @@ import pandas as pd
 import math
 
 
+def toList(string):
+    if string != 'None':
+        string = string.split('-')
+        return string
+
 class Player:
     def __init__(self, name):
         self.Name = name
         self.Level = 1
         self.CurrentLevel = 0
-        self.MaxLevel = 10
+        self.MaxLevel = 100
         self.stats_dictionary = {'Max Health' : 10, 'Attack':5,'Magic Attack':5,'Defense':5,'Magic Defense': 5, 'Attack Speed':1}
         self.inventory = pd.DataFrame(columns= ['Name','Description','Stats', 'Amount', 'Type'], dtype=object)
         self.equipment = pd.DataFrame(data = 'None', columns= ['Name','Stats','Type'],index = ['Weapon','Armor','Pet'], dtype=object) 
         self.CurrentHealth = self.stats_dictionary['Max Health']
         self.inventory = addItem(self, ['Gold'],[100])
-        #self.inventory.loc[len(self.inventory.index)] = ['Gold', 'Currency used in the market and for other applications', 'None', 100, 'Currency']
+        self.statpoints = 10
+        self.totalstatpoints = 10
 
     def equip(self, equipmentName):
         if equipmentName in self.inventory.loc[:,'Name'].values:
@@ -37,57 +43,71 @@ class Player:
             return 'Enemy Goes'
 
     def attack(self):
-        return random.randint(0, self.stats_dictionary['Attack'])
-    
-    def magicAttack(self):
-        return random.randint(0, self.stats_dictionary['Magic Attack'])
+        lower_bound = int(self.equipment.loc['Weapon','Stats'][0])
+        upper_bound = int(self.equipment.loc['Weapon','Stats'][1])
+        if self.equipment.loc['Weapon','Type'] == 'Attack':
+            currentattack = random.randint(lower_bound, self.stats_dictionary['Attack'] + upper_bound)
+            currentmagicattack = random.randint(0, self.stats_dictionary['Magic Attack'])
+        else:
+            currentattack = random.randint(0, self.stats_dictionary['Attack'])
+            currentmagicattack = random.randint(lower_bound, self.stats_dictionary['Magic Attack'] + upper_bound)
+        return {'Attack' : currentattack, 'Magic Attack': currentmagicattack} 
 
     def defend(self):
-        currentdefense = random.randint(0, self.stats_dictionary['Defense'])
-        currentmagicdefense = random.randint(0, self.stats_dictionary['Magic Defense'])
+        lower_bound = int(self.equipment.loc['Armor','Stats'][0])
+        upper_bound = int(self.equipment.loc['Armor','Stats'][1])
+        if self.equipment.loc['Armor','Type'] == 'Defense':
+            currentdefense = random.randint(lower_bound, self.stats_dictionary['Defense'] + upper_bound)
+            currentmagicdefense = random.randint(0, self.stats_dictionary['Magic Defense'])
+        else:
+            currentdefense = random.randint(0, self.stats_dictionary['Defense'])
+            currentmagicdefense = random.randint(lower_bound, self.stats_dictionary['Magic Defense'] + upper_bound)
         return {'Defense': currentdefense, 'Magic Defense': currentmagicdefense}
 
     def powerUp(self):
-        temp_attack = self.stats_dictionary['Attack']
-        temp_magic_attack = self.stats_dictionary['Magic Attack']
         self.stats_dictionary['Attack'] = int(math.ceil(self.stats_dictionary['Attack'] * 1.5))
         self.stats_dictionary['Magic Attack'] = int(math.ceil(self.stats_dictionary['Magic Attack'] * 1.5))
-        return self.stats_dictionary['Attack'] - temp_attack, self.stats_dictionary['Magic Attack'] - temp_magic_attack
+        self.stats_dictionary['Attack Speed'] = int(math.ceil(self.stats_dictionary['Attack Speed'] * 1.5))
+        return self.stats_dictionary['Attack'], self.stats_dictionary['Magic Attack'], self.stats_dictionary['Attack Speed']
 
     def levelUp(self):
         while self.CurrentLevel >= self.MaxLevel:
             self.CurrentLevel  = self.CurrentLevel - self.MaxLevel
             self.MaxLevel = int(self.MaxLevel * 1.5)
             self.Level += 1
+            self.statpoints += 10
+            self.totalstatpoints += 10
 
 
 class Warrior(Player):
     def __init__(self, name):
         Player.__init__(self, name)
-        # increasing stats fit for a warrior
-        self.stats_dictionary['Max Health'] = 12
-        self.stats_dictionary['Attack'] = 14
-        self.stats_dictionary['Defense'] = 14
-        # eqipping warrior with base weapon and armor
         self.inventory = addItem(self, ['Wooden Sword','Cloth Armor'], [1,1])
         self.equip('Wooden Sword')
         self.equip('Cloth Armor')
+        self.role = 'Warrior'
+        self.berSerkCooldown = 3
+    
+    def berSerk(self):
+        self.CurrentHealth += self.Level
+        self.stats_dictionary['Attack'] += self.Level
+        self.stats_dictionary['Defense'] += self.Level
+        self.stats_dictionary['Attack Speed'] += self.Level
+    
+
 
 class Mage(Player):
     def __init__(self, name):
         Player.__init__(self, name)
-        self.stats_dictionary['Magic Attack'] = 18
-        self.stats_dictionary['Magic Defense'] = 12
-        self.inventory.loc[len(self.inventory.index)] = ['Wooden Staff','The most basic of staves',['0', '3'], 1, 'Magic Attack']
-        self.inventory.loc[len(self.inventory.index)] = ['Cloth Robe','The most basic of robes',['0','2'], 1, 'Magic Defense']
-        self.equipment.loc['Weapon'] = ['Wooden Staff', ['0', '3'], 'Magic Attack']
-        self.equipment.loc['Armor'] = ['Cloth Robe',['0','2'], 'Magic Defense']
+        self.inventory = addItem(self, ['Wooden Staff','Cloth Robe'],[1,1])
+        self.equip('Wooden Staff')
+        self.equip('Cloth Robe')
+        self.role = 'Mage'
+        self.fireBallCooldown = 3
 
+    def fireBall(self):
+        return 2 * self.Level 
 
-def toList(string):
-    if string != 'None':
-        string = string.split('-')
-        return string
 
 # function for administrators to add items from an excel file into inventories. Will be used to add drops to players inventories
 def addItem(player, nameOfItem, amounts):
@@ -111,4 +131,4 @@ def addItem(player, nameOfItem, amounts):
 
 warrior = Warrior('Bob')
 
-warrior.inventory.dtypes
+warrior.inventory

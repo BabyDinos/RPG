@@ -1,3 +1,5 @@
+from logging import PlaceHolder
+from tkinter.tix import Select
 from nextcord.ext import commands
 import asyncio
 import aiosqlite
@@ -6,8 +8,9 @@ from sqliteCommands import sqlCommands
 from enemyClass import *
 from playerClass import *
 import nextcord
-from nextcord.ui import Button, View
+from nextcord.ui import Button, View, Select
 import math
+import pandas as pd
 
 class AccountCommands(commands.Cog):
 
@@ -18,37 +21,11 @@ class AccountCommands(commands.Cog):
         self.id = str(ctx.author).split('#')[-1]
         return sqlCommands.load(self.id, database = 'player')
 
-    # function converts base stats of classes into formated string to be displayed in nextcord.embed
-    def baseDifference(self, whatClass):
-
-        string = ''
-        player = Player('name')
-        warrior = Warrior('name')
-        mage = Mage('name')
-
-        if whatClass == 'Warrior':
-            for (x, y), (a,b) in zip(warrior.stats_dictionary.items(), player.stats_dictionary.items()):
-                if y-b == 0:
-                    string += x + ': ' + str(b) + '\n'
-                elif y - b > 0:
-                    string += x + ': ' + str(b) + ' (+' + str(y-b) + ')' + '\n'
-                else:
-                    string += x + ': ' + str(b) + ' (-' + str(y-b) + ')' + '\n'
-        elif whatClass == 'Mage':
-            for (x, y), (a,b) in zip(mage.stats_dictionary.items(), player.stats_dictionary.items()):
-                if y-b == 0:
-                    string += x + ': ' + str(b) + '\n'
-                elif y - b > 0:
-                    string += x + ': ' + str(b) + ' (+' + str(y-b) + ')' + '\n'
-                else:
-                    string += x + ': ' + str(b) + ' (-' + str(y-b) + ')' + '\n'
-        return string
-
     # function creates an array that stores formated string of player equipment to be displayed in nextcord.embed
     def playerInfo(self, player):
         # arr first string will be Stats, next will be equipment, and last will be inventory
         arr = []
-        string = ''
+        string = 'XP: ' + str(player.CurrentLevel) + '/' + str(player.MaxLevel) + '\n'
         for x, y in player.stats_dictionary.items():
             if x == 'Max Health':
                 string += 'Health: ' + str(player.CurrentHealth) + '/' + str(y) + '\n' 
@@ -84,7 +61,6 @@ class AccountCommands(commands.Cog):
 
         return dictionary
 
-
     @commands.command()
     async def register(self, ctx): #uses baseDifference
         # checking if player exists already, if they do deny re-registering
@@ -101,49 +77,56 @@ class AccountCommands(commands.Cog):
             try:
                 self.username_message = await self.bot.wait_for('message', timeout = 20, check= lambda message: message.author == ctx.author and message.channel == ctx.channel)
 
-                embed = nextcord.Embed(
-                    title = 'Register',
-                    description = 'Welcome ' + str(self.username_message.content)
-                )
-                embed.add_field(name = 'Warrior', value = '''Warriors are a class that specializes in swords and deal physical damage\n
-                                        {}'''.format(self.baseDifference('Warrior')))
-                embed.add_field(name = 'Mage', value = '''Mages are a class that specializes in staves and deal magical damage\n
-                                        {}'''.format(self.baseDifference('Mage')))          
-                embed.set_footer(text = 'Choose your class: ')      
-
-                await self.bot_message.edit(embed = embed)
-
-                self.class_message = await self.bot.wait_for('message', timeout = 20, check= lambda message: message.author == ctx.author and message.channel == ctx.channel)
-
-                if self.username_message and str(self.class_message.content) in ['Warrior', 'Mage']:
-                    match str(self.class_message.content):
-                        case 'Warrior':
-                            sqlCommands.save(self.id, Warrior(str(self.username_message.content)) , database = 'player')
-                        case 'Mage':
-                            sqlCommands.save(self.id, Mage(str(self.username_message.content)) , database = 'player')
-                        case _:
-                            return ctx.send('Invalid Class')
+                async def warrior_button_callback(interaction):
+                    sqlCommands.save(self.id, Warrior(str(self.username_message.content)) , database = 'player')
                     embed = nextcord.Embed(
                         title = 'Thanks for Registering ' + str(self.username_message.content),
                         description = 'Welcome to RPG!'
                     )
+                    self.register_msg = await ctx.send(embed = embed, delete_after = 20)
                     await self.username_message.delete()
-                    await self.class_message.delete()
-                    await self.bot_message.edit(embed = embed)
+                    await self.bot_message.delete()
+                    await ctx.message.delete()
+                    await interaction.response.defer()
+
+                async def mage_button_callback(interaction):
+                    sqlCommands.save(self.id, Mage(str(self.username_message.content)) , database = 'player')
+                    embed = nextcord.Embed(
+                        title = 'Thanks for Registering ' + str(self.username_message.content),
+                        description = 'Welcome to RPG!'
+                    )
+                    self.register_msg = await ctx.send(embed = embed, delete_after = 20)
+                    await self.username_message.delete()
+                    await self.bot_message.delete()
+                    await ctx.message.delete()
+                    await interaction.response.defer()
+                    
+
+                Warrior_Button = Button(label = 'Warrior')
+                Warrior_Button.callback = warrior_button_callback
+                Mage_Button = Button(label = 'Mage')
+                Mage_Button.callback = mage_button_callback
+                myview = View(timeout = 120)
+                myview.add_item(Warrior_Button)
+                myview.add_item(Mage_Button)
+
+                embed = nextcord.Embed(
+                    title = 'Register',
+                    description = 'Welcome ' + str(self.username_message.content)
+                )
+
+                embed.add_field(name = 'Warrior', value = '''Warrior's signature ability allows him to greatly increase his stats for a short burst''')
+                embed.add_field(name = 'Mage', value = '''Mage's signature ability gives them an attack multiplier''')          
+                embed.set_footer(text = 'Choose your class: ')      
+
+                await self.bot_message.edit(embed = embed, view = myview)
             except asyncio.TimeoutError: 
                 await ctx.send('Command Timedout', delete_after = 20)
-                asyncio.sleep(20)
-                try:
-                    await self.username_message.delete()
-                except:
-                    pass
-                try: 
-                    await self.class_message.delete()
-                except:
-                    pass
+                await self.username_message.delete()
                 await self.bot_message.delete()
-        await ctx.message.delete()
-                
+                await self.register_msg.delete()
+                await ctx.message.delete()
+ 
     @commands.command()
     async def nameChange(self, ctx):
         player = self.playerExists(ctx)
@@ -175,7 +158,7 @@ class AccountCommands(commands.Cog):
         else:
             playerinfo = self.playerInfo(player)
             embed = nextcord.Embed(
-                title = 'Character Info - ' + player.Name + 'Lvl: ' + str(player.Level),
+                title = 'Character Info - ' + player.Name + ' Lvl: ' + str(player.Level),
                 color = 0x000ff
             )
             embed.add_field(name = 'Infos', value = playerinfo[0])
@@ -280,6 +263,109 @@ class AccountCommands(commands.Cog):
             if timed_out:
                 await sent_msg.delete()
                 await ctx.message.delete()
+    
+    @commands.command()
+    async def statPoints(self, ctx):
+        player = self.playerExists(ctx)
+        if not player:
+            await ctx.send('You are not registered', delete_after = 20)
+        else:
+
+            self.original = player.stats_dictionary.copy()
+
+            def createEmbed():
+                string = ''
+                for x, y in player.stats_dictionary.items():
+                    string += x + ': ' + str(y) + '\n'  
+                embed = nextcord.Embed(
+                    title = 'Character Info - ' + player.Name + ' Lvl: ' + str(player.Level),
+                    color = 0x000ff
+                )
+                embed.add_field(name = 'Infos', value = string + 'Current Stat Points: ' + str(player.statpoints))
+                return embed
+
+            selectoptions = [
+            nextcord.SelectOption(label = 'HP'), nextcord.SelectOption(label = 'Attack'), nextcord.SelectOption(label = 'Magic Attack'),
+            nextcord.SelectOption(label = 'Defense'), nextcord.SelectOption(label = 'Magic Defense'), nextcord.SelectOption(label = 'Attack Speed')
+            ]
+
+            amountselectoptions = [
+                nextcord.SelectOption(label = 1), nextcord.SelectOption(label = 2), nextcord.SelectOption(label = 3), nextcord.SelectOption(label = 5), nextcord.SelectOption(label = 'All')
+            ]
+
+            async def dropdown_callback(interaction):
+                match dropdown.values[0]:
+                    case 'HP':
+                        self.stat = 'Max Health'
+                    case 'Attack':
+                        self.stat = 'Attack'
+                    case 'Magic Attack':
+                        self.stat = 'Magic Attack'
+                    case 'Defense':
+                        self.stat = 'Defense'
+                    case 'Magic Defense':
+                        self.stat = 'Magic Defense'
+                    case 'Attack Speed':
+                        self.stat = 'Attack Speed'
+                await interaction.response.defer()
+
+            async def amountdropdown_callback(interaction):
+                match amountdropdown.values[0]:
+                    case 'All':
+                        self.amount = player.statpoints
+                    case _:
+                        self.amount = int(amountdropdown.values[0])
+                await interaction.response.defer()
+
+            async def addButton_callback(interaction):
+                if player.statpoints >= self.amount > 0:
+                    player.stats_dictionary[self.stat] +=  self.amount
+                    player.statpoints -= self.amount
+                else:
+                    await ctx.send('No more Stat Points', delete_after = 20)
+                await bot_message.edit(embed = createEmbed(), view = myview)
+                await interaction.response.defer()
+
+            async def subtractButton_callback(interaction):
+                if player.statpoints < player.totalstatpoints and player.stats_dictionary[self.stat] > 1 + (player.totalstatpoints - self.amount):
+                    player.stats_dictionary[self.stat] -= (player.totalstatpoints - self.amount)
+                    player.statpoints += (player.totalstatpoints - self.amount)
+                else:
+                    await ctx.send('Cannot decrease any further', delete_after = 20)
+                await bot_message.edit(embed = createEmbed(), view = myview)
+                await interaction.response.defer()
+
+            async def confirmButton_callback(interaction):
+                sqlCommands.save(self.id, player, database='player')
+                await bot_message.delete()
+
+            async def resetButton_callback(interaction):
+                player.stats_dictionary = self.original
+                await bot_message.edit(embed = createEmbed(), view = myview)
+
+            dropdown = Select(placeholder = 'Choose Stat', options = selectoptions)    
+            dropdown.callback = dropdown_callback        
+            amountdropdown = Select(placeholder = 'Choose Amount', options = amountselectoptions)
+            amountdropdown.callback = amountdropdown_callback
+            addButton = Button(label = '+', style = nextcord.ButtonStyle.green)
+            addButton.callback = addButton_callback
+            subtractButton = Button(label = '-', style = nextcord.ButtonStyle.red)
+            subtractButton.callback = subtractButton_callback
+            confirmButton = Button(label = 'Confirm', style = nextcord.ButtonStyle.blurple)
+            confirmButton.callback = confirmButton_callback
+            resetButton = Button(label = 'Reset', style = nextcord.ButtonStyle.danger)
+            resetButton.callback = resetButton_callback
+            myview = View(timeout = 120)
+            myview.add_item(dropdown)
+            myview.add_item(amountdropdown)
+            myview.add_item(addButton)
+            myview.add_item(subtractButton)
+            myview.add_item(confirmButton)
+            myview.add_item(resetButton)
+
+
+            bot_message = await ctx.send(embed = createEmbed(), view = myview, delete_after = 120)
+        await ctx.message.delete()
 
 def setup(bot):
     bot.add_cog(AccountCommands(bot))
