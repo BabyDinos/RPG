@@ -332,39 +332,33 @@ class AccountCommands(commands.Cog):
             async def dropdown_callback(interaction):
                 nonlocal stat
                 if interaction.user.id == ctx.author.id:
-                  match dropdown.values[0]:
-                        case 'HP':
-                            stat = 'Max Health'
-                        case 'Attack':
-                            stat = 'Attack'
-                        case 'Magic Attack':
-                            stat = 'Magic Attack'
-                        case 'Defense':
-                            stat = 'Defense'
-                        case 'Magic Defense':
-                            stat = 'Magic Defense'
-                        case 'Attack Speed':
-                            stat = 'Attack Speed'
-                        case _:
-                            await ctx.send('Pick Again', delete_after = 10)
+                    if dropdown.values[0] == 'HP':
+                        stat = 'Max Health'
+                    elif dropdown.values[0] == 'Attack':
+                        stat = 'Attack'
+                    elif dropdown.values[0] == 'Magic Attack':
+                        stat = 'Magic Attack'
+                    elif dropdown.values[0] == 'Defense':
+                        stat = 'Defense'
+                    elif dropdown.values[0] == 'Magic Defense':
+                        stat = 'Magic Defense'
+                    elif dropdown.values[0] == 'Attack Speed':
+                        stat = 'Attack Speed'
                     await interaction.response.defer()
 
             async def amountdropdown_callback(interaction):
                 nonlocal amount
                 if interaction.user.id == ctx.author.id:
-                    match amountdropdown.values[0]:
-                        case 'All':
-                            amount = player.statpoints
-                        case '1':
+                    if amountdropdown.values[0] == 'All':
+                        amount = player.statpoints
+                    elif amountdropdown.values[0] == '1':
                             amount = 1
-                        case '2':
+                    elif amountdropdown.values[0] == '2':
                             amount = 2
-                        case '3':
+                    elif amountdropdown.values[0] == '3':
                             amount = 3
-                        case '5':
+                    elif amountdropdown.values[0] == '5':
                             amount = 5
-                        case _:
-                            await ctx.send('Pick another amount', delete_after = 10)
                     await interaction.response.defer()
 
             async def addButton_callback(interaction):
@@ -473,31 +467,25 @@ class AccountCommands(commands.Cog):
             async def dropdown_callback(interaction):
                 nonlocal item
                 if interaction.user.id == ctx.author.id:
-                    match dropdown.values[0]:
-                        case 'Stone':
-                            item = 'Stone'
-                        case 'Meat':
-                            item = 'Meat'
-                        case 'Hide':
-                            item = 'Hide'
-                        case 'Bark':
-                            item = 'Bark'
-                        case _:
-                            await ctx.send('Pick Again', delete_after = 10)
+                    if dropdown.values[0] == 'Stone':
+                        item = 'Stone'
+                    elif dropdown.values[0] == 'Meat':
+                        item = 'Meat'
+                    elif dropdown.values[0] == 'Hide':
+                        item = 'Hide'
+                    elif dropdown.values[0] == 'Bark':
+                        item = 'Bark'
                     await interaction.response.defer()
 
             async def amountdropdown_callback(interaction):
                 nonlocal amount
                 if interaction.user.id == ctx.author.id:
-                    match amountdropdown.values[0]:
-                        case '10':
-                            amount = 10
-                        case '1':
-                            amount = 1
-                        case '5':
-                            amount = 5
-                        case _:
-                            await ctx.send('Pick another amount', delete_after = 10)
+                    if amountdropdown.values[0] == '10':
+                        amount = 10
+                    elif amountdropdown.values[0] == '1':
+                        amount = 1
+                    elif amountdropdown.values[0] == '5':
+                        amount = 5
                     await interaction.response.defer()
 
             async def increaseAmount_callback(interaction):

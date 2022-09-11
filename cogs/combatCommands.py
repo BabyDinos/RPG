@@ -24,13 +24,12 @@ class comCommands(commands.Cog):
 
     def enemySpawn(self, player):
         enemy_choice = random.choices(['Golem','Panther','Tree Monster'], weights = [1, 1, 1])
-        match enemy_choice[0]:
-            case 'Golem':
-                enemy = Golem(name = 'Golem', player = player)
-            case 'Panther':
-                enemy = Panther(name = 'Panther', player = player)
-            case 'Tree Monster':
-                enemy = TreeMonster(name = 'Tree Monster', player = player)
+        if enemy_choice[0] == 'Golem':
+            enemy = Golem(name = 'Golem', player = player)
+        elif enemy_choice[0] == 'Panther':
+            enemy = Panther(name = 'Panther', player = player)
+        elif enemy_choice[0] == 'Tree Monster':
+            enemy = TreeMonster(name = 'Tree Monster', player = player)
         return enemy
 
     #cooldown time should be same as timeout time for embed
@@ -80,29 +79,28 @@ class comCommands(commands.Cog):
                     enemy_decisions = random.choices(['Enemy Attacked','Enemy Defended','Enemy Poweredup'], weights= [1, 1, 1])
                     player_attack = player.attack()
                     full_damage = player_attack['Attack'] + player_attack['Magic Attack']
-                    match enemy_decisions[0]:
-                        case 'Enemy Attacked':
-                            attackspeed_decision = player.attackSpeed(enemy)
-                            if attackspeed_decision == 'Player Goes':
-                                enemy.stats_dictionary['Current Health'] -= full_damage
-                                situation = player.Name + ' swiftly attacks ' + enemy.Name + ' for ' + str(full_damage) + ' attack'
-                            else:
-                                enemy_attack = enemy.enemyAttack()
-                                player.stats_dictionary['Current Health'] -= sum(list(enemy_attack.values()))
-                                situation = enemy.Name + ' swiftly attacks ' + player.Name + ' for ' + str(sum(list(enemy_attack.values()))) + ' attack'
-                        case 'Enemy Defended':
-                            enemy_defense = enemy.enemyDefend()
-                            full_defend = enemy_defense['Defense'] + enemy_defense['Magic Defense']
-                            damage = player_attack['Attack'] - enemy_defense['Defense'] + player_attack['Magic Attack'] - enemy_defense['Magic Defense']
-                            if (damage) > 0:
-                                enemy.stats_dictionary['Current Health'] -= damage
-                                situation = player.Name + ' attacks ' + enemy.Name + ' for ' + str(full_damage) + ' attack, but ' + enemy.Name + ' defended for ' + str(full_defend)
-                            else:
-                                situation = enemy.Name + ' defended all of ' + player.Name + "'s damage"
-                        case 'Enemy Poweredup':
+                    if enemy_decisions[0] == 'Enemy Attacked':
+                        attackspeed_decision = player.attackSpeed(enemy)
+                        if attackspeed_decision == 'Player Goes':
                             enemy.stats_dictionary['Current Health'] -= full_damage
-                            enemy.enemyPowerUp()
-                            situation = player.Name + ' attacks ' + enemy.Name + ' for ' + str(full_damage) + ' attack, while ' + enemy.Name + ' powers up'
+                            situation = player.Name + ' swiftly attacks ' + enemy.Name + ' for ' + str(full_damage) + ' attack'
+                        else:
+                            enemy_attack = enemy.enemyAttack()
+                            player.stats_dictionary['Current Health'] -= sum(list(enemy_attack.values()))
+                            situation = enemy.Name + ' swiftly attacks ' + player.Name + ' for ' + str(sum(list(enemy_attack.values()))) + ' attack'
+                    elif enemy_decisions[0] == 'Enemy Defended':
+                        enemy_defense = enemy.enemyDefend()
+                        full_defend = enemy_defense['Defense'] + enemy_defense['Magic Defense']
+                        damage = player_attack['Attack'] - enemy_defense['Defense'] + player_attack['Magic Attack'] - enemy_defense['Magic Defense']
+                        if (damage) > 0:
+                            enemy.stats_dictionary['Current Health'] -= damage
+                            situation = player.Name + ' attacks ' + enemy.Name + ' for ' + str(full_damage) + ' attack, but ' + enemy.Name + ' defended for ' + str(full_defend)
+                        else:
+                            situation = enemy.Name + ' defended all of ' + player.Name + "'s damage"
+                    elif enemy_decisions[0] == 'Enemy Poweredup':
+                        enemy.stats_dictionary['Current Health'] -= full_damage
+                        enemy.enemyPowerUp()
+                        situation = player.Name + ' attacks ' + enemy.Name + ' for ' + str(full_damage) + ' attack, while ' + enemy.Name + ' powers up'
                     turn += 1
                     if off_cooldown > turn:
                         situation += '\nSpecial Ability is On Cooldown'
@@ -118,20 +116,19 @@ class comCommands(commands.Cog):
                     enemy_decisions = random.choices(['Enemy Attacked','Enemy Defended','Enemy Poweredup'], weights= [1, 1, 1])
                     player_defend = player.defend()
                     player_defend = sum(list(player_defend.values()))
-                    match enemy_decisions[0]:
-                        case 'Enemy Attacked':
-                            enemy_attack = enemy.enemyAttack()
-                            enemy_damage = sum(list(enemy_attack.values()))
-                            if (enemy_damage - player_defend) > 0:
-                                player.stats_dictionary['Current Health'] -= (enemy_damage - player_defend)
-                                situation = player.Name + ' defends ' + str(player_defend) + ' out of ' + str(enemy_damage) + ' dealt by ' + enemy.Name
-                            else:
-                                situation = player.Name + ' defended all the damage from ' + enemy.Name
-                        case 'Enemy Defended':
-                            situation = 'Both ' + player.Name + ' and ' + enemy.Name + ' defended'
-                        case 'Enemy Poweredup':
-                            enemy.enemyPowerUp()
-                            situation = player.Name + ' defended, but ' + enemy.Name + ' powered up'
+                    if enemy_decisions[0] == 'Enemy Attacked':
+                        enemy_attack = enemy.enemyAttack()
+                        enemy_damage = sum(list(enemy_attack.values()))
+                        if (enemy_damage - player_defend) > 0:
+                            player.stats_dictionary['Current Health'] -= (enemy_damage - player_defend)
+                            situation = player.Name + ' defends ' + str(player_defend) + ' out of ' + str(enemy_damage) + ' dealt by ' + enemy.Name
+                        else:
+                            situation = player.Name + ' defended all the damage from ' + enemy.Name
+                    elif enemy_decisions[0] == 'Enemy Defended':
+                        situation = 'Both ' + player.Name + ' and ' + enemy.Name + ' defended'
+                    elif enemy_decisions[0] == 'Enemy Poweredup':
+                        enemy.enemyPowerUp()
+                        situation = player.Name + ' defended, but ' + enemy.Name + ' powered up'
                     turn += 1
                     if off_cooldown > turn:
                         situation += '\nSpecial Ability is On Cooldown'
@@ -147,16 +144,15 @@ class comCommands(commands.Cog):
                     enemy_decisions = random.choices(['Enemy Attacked','Enemy Defended','Enemy Poweredup'], weights= [1, 1, 1])
                     player.powerUp()
 
-                    match enemy_decisions[0]:
-                        case 'Enemy Attacked':
-                            enemy_attack = enemy.enemyAttack()
-                            player.stats_dictionary['Current Health'] -= sum(list(enemy_attack.values()))
-                            situation = enemy.Name + ' attacked ' + player.Name + ' for ' + str(sum(list(enemy_attack.values()))) + ', while ' + player.Name + ' powered up'
-                        case 'Enemy Defended':
-                            situation = player.Name + ' powered up while ' + enemy.Name + ' defended'
-                        case 'Enemy Poweredup':
-                            buffs_enemy = enemy.enemyPowerUp()
-                            situation = player.Name + ' and ' + enemy.Name + ' powered up'
+                    if enemy_decisions[0] == 'Enemy Attacked':
+                        enemy_attack = enemy.enemyAttack()
+                        player.stats_dictionary['Current Health'] -= sum(list(enemy_attack.values()))
+                        situation = enemy.Name + ' attacked ' + player.Name + ' for ' + str(sum(list(enemy_attack.values()))) + ', while ' + player.Name + ' powered up'
+                    elif enemy_decisions[0] == 'Enemy Defended':
+                        situation = player.Name + ' powered up while ' + enemy.Name + ' defended'
+                    elif enemy_decisions[0] == 'Enemy Poweredup':
+                        buffs_enemy = enemy.enemyPowerUp()
+                        situation = player.Name + ' and ' + enemy.Name + ' powered up'
                     turn += 1
                     if off_cooldown > turn:
                         situation += '\nSpecial Ability is On Cooldown'
