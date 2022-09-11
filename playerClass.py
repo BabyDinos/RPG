@@ -13,29 +13,31 @@ class Player:
         self.Name = name
         self.Level = 1
         self.CurrentLevel = 0
-        self.MaxLevel = 100
+        self.MaxLevel = 10
         self.stats_dictionary = {'Max Health' : 10, 'Attack':5,'Magic Attack':5,'Defense':5,'Magic Defense': 5, 'Attack Speed':1}
         self.inventory = pd.DataFrame(columns= ['Name','Description','Stats', 'Amount', 'Type'], dtype=object)
         self.equipment = pd.DataFrame(data = 'None', columns= ['Name','Stats','Type'],index = ['Weapon','Armor','Pet'], dtype=object) 
         self.CurrentHealth = self.stats_dictionary['Max Health']
         self.inventory = addItem(self, ['Gold'],[100])
-        self.statpoints = 10
-        self.totalstatpoints = 10
+        self.statpoints = 0
+        self.totalstatpoints = 0
 
     def equip(self, equipmentName):
         if equipmentName in self.inventory.loc[:,'Name'].values:
-            index = self.inventory.index[(self.inventory['Name'] == equipmentName)].tolist()
-            type = self.inventory.loc[index, 'Type'].tolist()[0]
+            index = self.inventory.index[(self.inventory['Name'] == equipmentName)][0]
+            type = self.inventory.loc[index, 'Type']
             if type == 'Attack' or type == 'Magic Attack':
-                self.equipment.loc['Weapon'] = [equipmentName, self.inventory.loc[index, 'Stats'].tolist()[0], type]
+                self.equipment.loc['Weapon'] = [equipmentName, self.inventory.loc[index, 'Stats'], type]
+            elif type == 'Defense' or type == 'Magic Defense':
+                self.equipment.loc['Armor'] = [equipmentName, self.inventory.loc[index, 'Stats'], type]
             else:
-                self.equipment.loc['Armor'] = [equipmentName, self.inventory.loc[index, 'Stats'].tolist()[0], type]
+                return False
             return True
         else:
             return False
 
     def attackSpeed(self, enemy):
-        decision = random.choices(['Player','Enemy'], weights = [self.stats_dictionary['Attack Speed'], enemy.AttackSpeed])
+        decision = random.choices(['Player','Enemy'], weights = [self.stats_dictionary['Attack Speed'], enemy.stats_dictionary['Attack Speed']])
 
         if decision[0] == 'Player':
             return 'Player Goes'
@@ -78,6 +80,21 @@ class Player:
             self.statpoints += 10
             self.totalstatpoints += 10
 
+    def consume(self, consumeableName):
+        if consumeableName in self.inventory.loc[:,'Name'].values:
+            index = self.inventory.index[(self.inventory['Name'] == consumeableName)][0]
+            stats = self.inventory.loc[index, 'Stats']
+            hp_regain = random.randint(int(stats[0]), int(stats[1]))
+            if self.CurrentHealth + hp_regain > self.stats_dictionary['Max Health']:
+                self.CurrentHealth = self.stats_dictionary['Max Health']
+            else:
+                self.CurrentHealth += hp_regain
+            self.inventory.loc[index, 'Amount'] -= 1
+            if self.inventory.loc[index, 'Amount'] == 0:
+                self.inventory.drop(index)
+            return True
+        else:
+            return False
 
 class Warrior(Player):
     def __init__(self, name):
@@ -94,8 +111,6 @@ class Warrior(Player):
         self.stats_dictionary['Defense'] += self.Level
         self.stats_dictionary['Attack Speed'] += self.Level
     
-
-
 class Mage(Player):
     def __init__(self, name):
         Player.__init__(self, name)
@@ -107,7 +122,6 @@ class Mage(Player):
 
     def fireBall(self):
         return 2 * self.Level 
-
 
 # function for administrators to add items from an excel file into inventories. Will be used to add drops to players inventories
 def addItem(player, nameOfItem, amounts):
@@ -129,6 +143,12 @@ def addItem(player, nameOfItem, amounts):
 
     return player.inventory
 
-warrior = Warrior('Bob')
-
-warrior.inventory
+def subtractItem(player, nameOfItem, amounts):
+    for name, amount in zip(nameOfItem, amounts):
+        if name in player.inventory.loc[:,'Name'].tolist():
+            index = player.inventory.index[player.inventory['Name'] == name].tolist()
+            newVal = int(player.inventory.loc[index,'Amount']) - amount
+            player.inventory.loc[index, 'Amount'] = newVal
+            if newVal == 0:
+                player.inventory = player.inventory.drop(index)
+    return player.inventory
