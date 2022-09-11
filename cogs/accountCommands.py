@@ -330,9 +330,9 @@ class AccountCommands(commands.Cog):
             ]
 
             async def dropdown_callback(interaction):
+                nonlocal stat
                 if interaction.user.id == ctx.author.id:
-                    nonlocal stat
-                    match dropdown.values[0]:
+                  match dropdown.values[0]:
                         case 'HP':
                             stat = 'Max Health'
                         case 'Attack':
