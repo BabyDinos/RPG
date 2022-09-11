@@ -1,8 +1,5 @@
 import nextcord
 from nextcord.ext import commands
-import aiosqlite
-import asyncio
-import logging
 import os
 from sqlitedict import SqliteDict
 from webserver import keep_alive
@@ -32,4 +29,5 @@ for filename in os.listdir("./cogs"):
         print(filename[:-3] + ' has loaded')
 
 keep_alive()
-bot.run(os.environ['TOKEN'])
+TOKEN = os.environ['TOKEN']
+bot.run(TOKEN)
