@@ -12,6 +12,7 @@ sqlitedict = "^2.0.0"
 aiosqlite = "^0.17.0"
 Flask = "^2.2.2"
 nextcord = "^2.2.0"
+waitress = "^2.1.2"
 
 [tool.poetry.dev-dependencies]
 
