@@ -5,6 +5,7 @@ import asyncio
 import logging
 import os
 from sqlitedict import SqliteDict
+from webserver import keep_alive
 
 PREFIX = '$'
 
@@ -30,4 +31,5 @@ for filename in os.listdir("./cogs"):
         bot.load_extension(f"cogs.{filename[:-3]}")
         print(filename[:-3] + ' has loaded')
 
+keep_alive()
 bot.run(os.environ['TOKEN'])
