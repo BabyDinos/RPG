@@ -13,6 +13,7 @@ aiosqlite = "^0.17.0"
 Flask = "^2.2.2"
 nextcord = "^2.2.0"
 waitress = "^2.1.2"
+openpyxl = "^3.0.10"
 
 [tool.poetry.dev-dependencies]
 

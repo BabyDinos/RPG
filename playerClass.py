@@ -37,7 +37,8 @@ class Player:
             return False
 
     def attackSpeed(self, enemy):
-        decision = random.choices(['Player','Enemy'], weights = [self.stats_dictionary['Attack Speed'], enemy.stats_dictionary['Attack Speed']])
+				multiplier = 100
+				decision = random.choices(['Player','Enemy'], weights = [(self.stats_dictionary['Attack Speed']/multiplier), (enemy.stats_dictionary['Attack Speed']/multiplier]))
 
         if decision[0] == 'Player':
             return 'Player Goes'
