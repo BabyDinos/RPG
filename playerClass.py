@@ -19,8 +19,8 @@ class Player:
         self.equipment = pd.DataFrame(data = 'None', columns= ['Name','Stats','Type'],index = ['Weapon','Armor','Pet'], dtype=object) 
         self.CurrentHealth = self.stats_dictionary['Max Health']
         self.inventory = addItem(self, ['Gold'],[100])
-        self.statpoints = 0
-        self.totalstatpoints = 0
+        self.statpoints = 10
+        self.totalstatpoints = 10
 
     def equip(self, equipmentName):
         if equipmentName in self.inventory.loc[:,'Name'].values:
@@ -75,7 +75,7 @@ class Player:
     def levelUp(self):
         while self.CurrentLevel >= self.MaxLevel:
             self.CurrentLevel  = self.CurrentLevel - self.MaxLevel
-            self.MaxLevel = int(self.MaxLevel * 1.5)
+            self.MaxLevel = int(self.MaxLevel * 2)
             self.Level += 1
             self.statpoints += 10
             self.totalstatpoints += 10

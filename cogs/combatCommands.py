@@ -14,12 +14,13 @@ class comCommands(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self.fighttime = {}
+        self.deathtime = []
         self.healtime = {}
+        self.healtimer = 120
 
     def playerExists(self, ctx):
-            self.id = str(ctx.author).split('#')[-1]
-            return sqlCommands.load(self.id, database = 'player')
+        self.id = str(ctx.author).split('#')[-1]
+        return [sqlCommands.load(self.id, database = 'player'), self.id]
 
     def enemySpawn(self, player):
         enemy_choice = random.choices(['Golem','Panther','Tree Monster'], weights = [1, 1, 1])
@@ -36,16 +37,17 @@ class comCommands(commands.Cog):
     @commands.command()
     @commands.cooldown(1, 30, commands.BucketType.user)
     async def adventure(self, ctx):
-        player = self.playerExists(ctx)
+        arr = self.playerExists(ctx)
+        player = arr[0]
+        id = arr[1]
         if not player:
             await ctx.send('You are not registered', delete_after = 20)
             await ctx.message.delete()
-        elif self.id in self.fighttime:
-            await ctx.send('You are dead. Wait {:.2f} seconds until respawn'.format(self.fighttime[self.id]-time.time()), delete_after = 10)
+        elif id in self.deathtime:
+            await ctx.send('You are dead. You must heal before venturing again', delete_after = 10)
             await ctx.message.delete()
         else:
             enemy = self.enemySpawn(player)
-            self.deathtimer = 120
             # use to store the original dictionary
             player_total_dictionary = player.stats_dictionary.copy()
             player.stats_dictionary = {'Current Health': player_total_dictionary['Max Health']}
@@ -55,8 +57,8 @@ class comCommands(commands.Cog):
             enemy.stats_dictionary = {'Current Health': enemy_dictionary['Max Health']}
             enemy.stats_dictionary.update(enemy_dictionary)
             enemy.stats_dictionary.pop('Max Health')
-            self.turn = 1
-            self.off_cooldown = 0
+            turn = 1
+            off_cooldown = 0
 
             def createEmbed(situation = '\u200b'):
                 embed = nextcord.Embed(color = nextcord.Color.red(), title = player.Name + ' is Adventuring')
@@ -72,6 +74,8 @@ class comCommands(commands.Cog):
                 return embed
             
             async def attack_callback(interaction):
+                nonlocal turn
+                nonlocal off_cooldown
                 if interaction.user.id == ctx.author.id:
                     enemy_decisions = random.choices(['Enemy Attacked','Enemy Defended','Enemy Poweredup'], weights= [1, 1, 1])
                     player_attack = player.attack()
@@ -99,8 +103,8 @@ class comCommands(commands.Cog):
                             enemy.stats_dictionary['Current Health'] -= full_damage
                             enemy.enemyPowerUp()
                             situation = player.Name + ' attacks ' + enemy.Name + ' for ' + str(full_damage) + ' attack, while ' + enemy.Name + ' powers up'
-                    self.turn += 1
-                    if self.off_cooldown > self.turn:
+                    turn += 1
+                    if off_cooldown > turn:
                         situation += '\nSpecial Ability is On Cooldown'
                     else:
                         situation += '\nSpecial Ability is Off Cooldown'
@@ -108,6 +112,8 @@ class comCommands(commands.Cog):
                     await interaction.response.defer()
 
             async def defend_callback(interaction):
+                nonlocal turn
+                nonlocal off_cooldown
                 if interaction.user.id == ctx.author.id:
                     enemy_decisions = random.choices(['Enemy Attacked','Enemy Defended','Enemy Poweredup'], weights= [1, 1, 1])
                     player_defend = player.defend()
@@ -126,8 +132,8 @@ class comCommands(commands.Cog):
                         case 'Enemy Poweredup':
                             enemy.enemyPowerUp()
                             situation = player.Name + ' defended, but ' + enemy.Name + ' powered up'
-                    self.turn += 1
-                    if self.off_cooldown > self.turn:
+                    turn += 1
+                    if off_cooldown > turn:
                         situation += '\nSpecial Ability is On Cooldown'
                     else:
                         situation += '\nSpecial Ability is Off Cooldown'
@@ -135,6 +141,8 @@ class comCommands(commands.Cog):
                     await interaction.response.defer()
             
             async def powerup_callback(interaction):
+                nonlocal turn
+                nonlocal off_cooldown
                 if interaction.user.id == ctx.author.id:
                     enemy_decisions = random.choices(['Enemy Attacked','Enemy Defended','Enemy Poweredup'], weights= [1, 1, 1])
                     player.powerUp()
@@ -149,8 +157,8 @@ class comCommands(commands.Cog):
                         case 'Enemy Poweredup':
                             buffs_enemy = enemy.enemyPowerUp()
                             situation = player.Name + ' and ' + enemy.Name + ' powered up'
-                    self.turn += 1
-                    if self.off_cooldown > self.turn:
+                    turn += 1
+                    if off_cooldown > turn:
                         situation += '\nSpecial Ability is On Cooldown'
                     else:
                         situation += '\nSpecial Ability is Off Cooldown'
@@ -158,17 +166,19 @@ class comCommands(commands.Cog):
                     await interaction.response.defer()
             
             async def special_callback(interaction):
+                nonlocal turn
+                nonlocal off_cooldown
                 if interaction.user.id == ctx.author.id:
-                    if player.role == 'Warrior' and self.off_cooldown <= self.turn:
+                    if player.role == 'Warrior' and off_cooldown <= turn:
                         player.berSerk()
                         situation = player.Name + ' went Berserk! Their stats have increased\nSpecial Ability is off cooldown in ' + str(player.berSerkCooldown) + ' turns'
-                        self.off_cooldown = self.turn + player.berSerkCooldown
+                        off_cooldown = turn + player.berSerkCooldown
                         
-                    elif player.role == 'Mage' and self.off_cooldown <= self.turn:
+                    elif player.role == 'Mage' and off_cooldown <= turn:
                         damage = player.fireBall()
                         enemy.stats_dictionary['Current Health'] -= damage
                         situation = player.Name + ' dealt ' + str(damage) + ' magic damage to ' + enemy.Name + '\nSpecial Ability is off cooldown in ' + str(player.fireBallCooldown) + ' turns'
-                        self.off_cooldown = self.turn + player.fireBallCooldown
+                        off_cooldown = turn + player.fireBallCooldown
 
                     else:
                         situation = 'Ability on Cooldown'
@@ -206,24 +216,18 @@ class comCommands(commands.Cog):
                 for x, y in zip(enemy_drops[0], enemy_drops[1]):
                     summary_embed.add_field(name = x, value = y)
                 summary_embed.add_field(name = '\u200b', value = player.Name + ' gained ' + str(enemy.xpDrop()) + ' XP',inline = False)
+                sqlCommands.save(id, player, database = 'player')
                 await ctx.send(embed = summary_embed, delete_after = 20)
-
-                sqlCommands.save(self.id, player, database='player')
             
             elif player.stats_dictionary['Current Health'] <= 0:
                 player.stats_dictionary = player_total_dictionary
                 player.CurrentHealth = 0
-                sqlCommands.save(self.id, player, database = 'player')
                 await ctx.send('Player ' + player.Name + ' has lost to ' + enemy.Name, delete_after = 20)
-                self.fighttime[self.id] = time.time() + self.deathtimer
+                sqlCommands.save(id, player, database = 'player')
+                self.deathtime.append(id)
 
             await ctx.message.delete()
             await adventure_message.delete()
-            await asyncio.sleep(self.deathtimer)
-            if self.id in self.fighttime:
-                del self.fighttime[self.id]
-            player.CurrentHealth = player.stats_dictionary['Max Health']
-            sqlCommands.save(self.id, player, database='player')
 
     @adventure.error
     async def on_error(self, ctx, error):
@@ -235,7 +239,9 @@ class comCommands(commands.Cog):
 
     @commands.command()
     async def equip(self, ctx):
-        player = self.playerExists(ctx)
+        arr = self.playerExists(ctx)
+        player = arr[0]
+        id = arr[1]
         if not player:
             await ctx.send('You are not registered', delete_after = 20)
         else:
@@ -246,7 +252,7 @@ class comCommands(commands.Cog):
                     await ctx.send('Equipment changed to: ' + equipment_message.content, delete_after = 20)
                 else:
                     await ctx.send('Equipment not found', delete_after = 20)
-                sqlCommands.save(self.id, player, database = 'player')
+                sqlCommands.save(id, player, database = 'player')
             except:
                 await ctx.send('Connection Timedout', delete_after = 20)
                 try:
@@ -258,26 +264,31 @@ class comCommands(commands.Cog):
 
     @commands.command()
     async def heal(self, ctx):
-        player = self.playerExists(ctx)
+        arr = self.playerExists(ctx)
+        player = arr[0]
+        id = arr[1]
         if not player:
             await ctx.send('You are not registered', delete_after = 20)
-        elif self.id in self.healtime:
-            await ctx.send('Heal is on coolddown. Wait {:.2f} seconds until next heal'.format(self.healtime[self.id]-time.time()), delete_after = 10)
+        elif id in self.healtime:
+            await ctx.send('Heal is on coolddown. Wait {:.2f} seconds until next heal'.format(self.healtime[id]-time.time()), delete_after = 10)
             await ctx.message.delete()
         else:
-            self.healtimer = 120
+            if id in self.deathtime:
+                self.deathtime.remove(id)
             player.CurrentHealth = player.stats_dictionary['Max Health']
-            sqlCommands.save(self.id, player, database='player')
+            sqlCommands.save(id, player, database='player')
             await ctx.send('Player ' + player.Name + ' has healed to full health', delete_after = 20)
-            self.healtime[self.id] = time.time() + self.healtimer
+            self.healtime[id] = time.time() + self.healtimer
             await ctx.message.delete()
             await asyncio.sleep(self.healtimer)
-            if self.id in self.healtime:
-                del self.healtime[self.id]
+            if id in self.healtime:
+                del self.healtime[id]
 
     @commands.command()
     async def consume(self, ctx):
-        player = self.playerExists(ctx)
+        arr = self.playerExists(ctx)
+        player = arr[0]
+        id = arr[1]
         if not player:
             await ctx.send('You are not registered', delete_after = 20)
         else:
@@ -288,7 +299,7 @@ class comCommands(commands.Cog):
                     await ctx.send(player.Name + ' has consumed ' + consumeable_message.content, delete_after = 20)
                 else:
                     await ctx.send(consumeable_message.content + ' was not found', delete_after = 20)
-                sqlCommands.save(self.id, player, database = 'player')
+                sqlCommands.save(id, player, database = 'player')
             except:
                 await ctx.send('Connection Timedout', delete_after = 20)
                 try:
