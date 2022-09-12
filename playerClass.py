@@ -128,7 +128,7 @@ class Mage(Player):
             matk = 1
         else:
             matk = math.floor(self.stats_dictionary['Magic Attack'] / 10)
-        return matk * self.Level 
+        return matk + self.Level 
 
 # function for administrators to add items from an excel file into inventories. Will be used to add drops to players inventories
 def addItem(player, nameOfItem, amounts):

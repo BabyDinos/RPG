@@ -16,9 +16,9 @@ class comCommands(commands.Cog):
         self.healtime = {}
         self.healtimer = 600
 
-    def playerExists(self, ctx):
-        self.id = str(ctx.author).split('#')[-1]
-        return [sqlCommands.load(self.id, database='player'), self.id]
+    def getPlayer(self, ctx):
+        id = str(ctx.author).split('#')[-1]
+        return [sqlCommands.load(id, database='player'), id]
 
     def enemySpawn(self, player):
         enemy_choice = random.choices(['Golem', 'Panther', 'Tree Monster'],
@@ -28,14 +28,14 @@ class comCommands(commands.Cog):
         elif enemy_choice[0] == 'Panther':
             enemy = Panther(name='Panther', player=player)
         elif enemy_choice[0] == 'Tree Monster':
-            enemy = TreeMonster(name='Tree Monster', player=player)
+            enemy = TreeMonster(name='Treant', player=player)
         return enemy
 
     #cooldown time should be same as timeout time for embed
     @commands.command()
     @commands.cooldown(1, 30, commands.BucketType.user)
     async def adventure(self, ctx):
-        arr = self.playerExists(ctx)
+        arr = self.getPlayer(ctx)
         player = arr[0]
         id = arr[1]
         if not player:
@@ -307,7 +307,7 @@ class comCommands(commands.Cog):
 
     @commands.command()
     async def equip(self, ctx):
-        arr = self.playerExists(ctx)
+        arr = self.getPlayer(ctx)
         player = arr[0]
         id = arr[1]
         if not player:
@@ -339,7 +339,7 @@ class comCommands(commands.Cog):
 
     @commands.command()
     async def heal(self, ctx):
-        arr = self.playerExists(ctx)
+        arr = self.getPlayer(ctx)
         player = arr[0]
         id = arr[1]
         if not player:
@@ -366,7 +366,7 @@ class comCommands(commands.Cog):
 
     @commands.command()
     async def consume(self, ctx):
-        arr = self.playerExists(ctx)
+        arr = self.getPlayer(ctx)
         player = arr[0]
         id = arr[1]
         if not player:

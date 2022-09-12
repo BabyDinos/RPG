@@ -31,4 +31,8 @@ for filename in os.listdir("./cogs"):
 
 keep_alive()
 TOKEN = os.environ['TOKEN']
-bot.run(TOKEN)
+
+try:
+  bot.run(TOKEN)
+except:
+  os.system('kill 1')

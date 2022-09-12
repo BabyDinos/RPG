@@ -46,7 +46,7 @@ class Enemy:
 class Golem(Enemy):
     def __init__(self, name, player, bonuses = [2,0,0,2,2,0]):
         Enemy.__init__(self, name, player)
-        bonuses = np.asarray(bonuses) * player.Level
+        bonuses = np.asarray(bonuses) + player.Level
         for count, key in enumerate(self.stats_dictionary.keys()):
             if bonuses[count] == 0:
                 continue
@@ -67,7 +67,7 @@ class Golem(Enemy):
 class Panther(Enemy):
     def __init__(self, name, player, bonuses = [0,4,0,0,0,2]):
         Enemy.__init__(self, name, player)
-        bonuses = np.asarray(bonuses) * player.Level
+        bonuses = np.asarray(bonuses) + player.Level
         for count, key in enumerate(self.stats_dictionary.keys()):
             if bonuses[count] == 0:
                 continue
@@ -87,7 +87,7 @@ class Panther(Enemy):
 class TreeMonster(Enemy):
     def __init__(self, name, player, bonuses = [0,0,0,0,0,0]):
         Enemy.__init__(self, name, player)
-        bonuses = np.asarray(bonuses) * player.Level
+        bonuses = np.asarray(bonuses) + player.Level
         for count, key in enumerate(self.stats_dictionary.keys()):
             if bonuses[count] == 0:
                 continue

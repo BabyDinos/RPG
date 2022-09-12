@@ -12,30 +12,9 @@ class AccountCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    def playerExists(self, ctx):
-        self.id = str(ctx.author).split('#')[-1]
-        return [sqlCommands.load(self.id, database='player'), self.id]
-
-    # function creates an array that stores formated string of player equipment to be displayed in nextcord.embed
-    def playerInfo(self, player):
-        # arr first string will be Stats, next will be equipment, and last will be inventory
-        arr = []
-        string = 'XP: ' + str(player.CurrentLevel) + '/' + str(
-            player.MaxLevel) + '\n'
-        for x, y in player.stats_dictionary.items():
-            if x == 'Max Health':
-                string += 'Health: ' + str(
-                    player.CurrentHealth) + '/' + str(y) + '\n'
-            else:
-                string += x + ': ' + str(y) + '\n'
-        arr.append(string)
-        string = ''
-        for r in range(len(player.equipment.index)):
-            player.equipment.iloc[r, 0]
-            string += player.equipment.iloc[r].name + ': ' + str(
-                player.equipment.iloc[r, 0]) + '\n'
-        arr.append(string)
-        return arr
+    def getPlayer(self, ctx):
+        id = str(ctx.author).split('#')[-1]
+        return [sqlCommands.load(id, database='player'), id]
 
     # helper functions for the functions
     def toString(self, list):
@@ -44,27 +23,10 @@ class AccountCommands(commands.Cog):
         else:
             return list
 
-    # Converts dataframe inventory to a nested dictionary for nextcord to display
-    def playerInventory(self, player):
-        dictionary = {}
-        for row in range(len(player.inventory.index)):
-            for colCount, colName in enumerate(player.inventory.columns):
-                if colName != 'Stats' and colCount > 0:
-                    dictionary[name][colName] = player.inventory.iloc[row,
-                                                                      colCount]
-                elif colName == 'Stats':
-                    dictionary[name][colName] = self.toString(
-                        player.inventory.iloc[row, colCount])
-                else:
-                    name = player.inventory.iloc[row, colCount]
-                    dictionary[name] = {}
-
-        return dictionary
-
     @commands.command()
     async def register(self, ctx):  #uses baseDifference
         # checking if player exists already, if they do deny re-registering
-        arr = self.playerExists(ctx)
+        arr = self.getPlayer(ctx)
         player = arr[0]
         id = arr[1]
         if player:
@@ -159,7 +121,7 @@ class AccountCommands(commands.Cog):
 
     @commands.command()
     async def nameChange(self, ctx):
-        arr = self.playerExists(ctx)
+        arr = self.getPlayer(ctx)
         player = arr[0]
         id = arr[1]
         if not player:
@@ -190,12 +152,32 @@ class AccountCommands(commands.Cog):
 
     @commands.command()
     async def info(self, ctx):  #uses playerInfo
-        arr = self.playerExists(ctx)
+        arr = self.getPlayer(ctx)
         player = arr[0]
         id = arr[1]
         if not player:
             await ctx.send('You are not registered', ephemeral = True)
         else:
+              # function creates an array that stores formated string of player equipment to be displayed in nextcord.embed
+            def playerInfo(self, player):
+                # arr first string will be Stats, next will be equipment, and last will be inventory
+                arr = []
+                string = 'XP: ' + str(player.CurrentLevel) + '/' + str(
+                    player.MaxLevel) + '\n'
+                for x, y in player.stats_dictionary.items():
+                    if x == 'Max Health':
+                        string += 'Health: ' + str(
+                            player.CurrentHealth) + '/' + str(y) + '\n'
+                    else:
+                        string += x + ': ' + str(y) + '\n'
+                arr.append(string)
+                string = ''
+                for r in range(len(player.equipment.index)):
+                    player.equipment.iloc[r, 0]
+                    string += player.equipment.iloc[r].name + ': ' + str(
+                        player.equipment.iloc[r, 0]) + '\n'
+                arr.append(string)
+                return arr
             playerinfo = self.playerInfo(player)
             embed = nextcord.Embed(title='Character Info - ' + player.Name +
                                    ' Lvl: ' + str(player.Level),
@@ -208,7 +190,7 @@ class AccountCommands(commands.Cog):
 
     @commands.command()
     async def delete(self, ctx):
-        arr = self.playerExists(ctx)
+        arr = self.getPlayer(ctx)
         player = arr[0]
         id = arr[1]
         if not player:
@@ -254,12 +236,28 @@ class AccountCommands(commands.Cog):
 
     @commands.command()
     async def inventory(self, ctx):  #uses playerInventory
-        arr = self.playerExists(ctx)
+        arr = self.getPlayer(ctx)
         player = arr[0]
         id = arr[1]
         if not player:
             await ctx.send('You are not registered', delete_after=20)
         else:
+              # Converts dataframe inventory to a nested dictionary for nextcord to display
+            def playerInventory(self, player):
+                dictionary = {}
+                for row in range(len(player.inventory.index)):
+                    for colCount, colName in enumerate(player.inventory.columns):
+                        if colName != 'Stats' and colCount > 0:
+                            dictionary[name][colName] = player.inventory.iloc[row,
+                                                                              colCount]
+                        elif colName == 'Stats':
+                            dictionary[name][colName] = self.toString(
+                                player.inventory.iloc[row, colCount])
+                        else:
+                            name = player.inventory.iloc[row, colCount]
+                            dictionary[name] = {}
+        
+                return dictionary
 
             playerinv = self.playerInventory(player)
 
@@ -340,7 +338,7 @@ class AccountCommands(commands.Cog):
 
     @commands.command()
     async def statPoints(self, ctx):
-        arr = self.playerExists(ctx)
+        arr = self.getPlayer(ctx)
         player = arr[0]
         id = arr[1]
         if not player:
@@ -500,7 +498,7 @@ class AccountCommands(commands.Cog):
 
     @commands.command()
     async def shop(self, ctx):
-        arr = self.playerExists(ctx)
+        arr = self.getPlayer(ctx)
         player = arr[0]
         id = arr[1]
         if not player:
