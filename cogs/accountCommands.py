@@ -156,10 +156,10 @@ class AccountCommands(commands.Cog):
         player = arr[0]
         id = arr[1]
         if not player:
-            await ctx.send('You are not registered', ephemeral = True)
+            await ctx.send('You are not registered')
         else:
               # function creates an array that stores formated string of player equipment to be displayed in nextcord.embed
-            def playerInfo(self, player):
+            def playerInfo(player):
                 # arr first string will be Stats, next will be equipment, and last will be inventory
                 arr = []
                 string = 'XP: ' + str(player.CurrentLevel) + '/' + str(
@@ -178,7 +178,7 @@ class AccountCommands(commands.Cog):
                         player.equipment.iloc[r, 0]) + '\n'
                 arr.append(string)
                 return arr
-            playerinfo = self.playerInfo(player)
+            playerinfo = playerInfo(player)
             embed = nextcord.Embed(title='Character Info - ' + player.Name +
                                    ' Lvl: ' + str(player.Level),
                                    color=0x000ff)
@@ -243,7 +243,7 @@ class AccountCommands(commands.Cog):
             await ctx.send('You are not registered', delete_after=20)
         else:
               # Converts dataframe inventory to a nested dictionary for nextcord to display
-            def playerInventory(self, player):
+            def playerInventory(player):
                 dictionary = {}
                 for row in range(len(player.inventory.index)):
                     for colCount, colName in enumerate(player.inventory.columns):
@@ -259,7 +259,7 @@ class AccountCommands(commands.Cog):
         
                 return dictionary
 
-            playerinv = self.playerInventory(player)
+            playerinv = playerInventory(player)
 
             def createEmbed(pageNum=0, inline=False):
 
