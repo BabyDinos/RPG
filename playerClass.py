@@ -49,22 +49,22 @@ class Player:
         lower_bound = int(self.equipment.loc['Weapon','Stats'][0])
         upper_bound = int(self.equipment.loc['Weapon','Stats'][1])
         if self.equipment.loc['Weapon','Type'] == 'Attack':
-            currentattack = random.randint(lower_bound, self.stats_dictionary['Attack'] + upper_bound)
+            currentattack = random.randint(lower_bound + self.stats_dictionary['Attack'], self.stats_dictionary['Attack'] + upper_bound)
             currentmagicattack = random.randint(0, self.stats_dictionary['Magic Attack'])
         else:
             currentattack = random.randint(0, self.stats_dictionary['Attack'])
-            currentmagicattack = random.randint(lower_bound, self.stats_dictionary['Magic Attack'] + upper_bound)
+            currentmagicattack = random.randint(lower_bound+self.stats_dictionary['Magic Attack'], self.stats_dictionary['Magic Attack'] + upper_bound)
         return {'Attack' : currentattack, 'Magic Attack': currentmagicattack} 
 
     def defend(self):
         lower_bound = int(self.equipment.loc['Armor','Stats'][0])
         upper_bound = int(self.equipment.loc['Armor','Stats'][1])
         if self.equipment.loc['Armor','Type'] == 'Defense':
-            currentdefense = random.randint(lower_bound, self.stats_dictionary['Defense'] + upper_bound)
+            currentdefense = random.randint(lower_bound+self.stats_dictionary['Defense'], self.stats_dictionary['Defense'] + upper_bound)
             currentmagicdefense = random.randint(0, self.stats_dictionary['Magic Defense'])
         else:
             currentdefense = random.randint(0, self.stats_dictionary['Defense'])
-            currentmagicdefense = random.randint(lower_bound, self.stats_dictionary['Magic Defense'] + upper_bound)
+            currentmagicdefense = random.randint(lower_bound+self.stats_dictionary['Magic Defense'], self.stats_dictionary['Magic Defense'] + upper_bound)
         return {'Defense': currentdefense, 'Magic Defense': currentmagicdefense}
 
     def powerUp(self):
@@ -105,6 +105,7 @@ class Warrior(Player):
         self.equip('Cloth Armor')
         self.role = 'Warrior'
         self.berSerkCooldown = 3
+        self.skilldescription = "The Warrior's ability grants them bonus attack, defense, and attack speed"
     
     def berSerk(self):
         self.CurrentHealth += self.Level
@@ -120,9 +121,14 @@ class Mage(Player):
         self.equip('Cloth Robe')
         self.role = 'Mage'
         self.fireBallCooldown = 3
+        self.skilldescription = "The Mage's ability deals true damage scaling with magic attack "
 
     def fireBall(self):
-        return 2 * self.Level 
+        if math.floor(self.stats_dictionary['Magic Attack'] / 10) == 0:
+            matk = 1
+        else:
+            matk = math.floor(self.stats_dictionary['Magic Attack'] / 10)
+        return matk * self.Level 
 
 # function for administrators to add items from an excel file into inventories. Will be used to add drops to players inventories
 def addItem(player, nameOfItem, amounts):

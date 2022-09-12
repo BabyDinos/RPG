@@ -3,6 +3,7 @@ from nextcord.ext import commands
 import os
 from sqlitedict import SqliteDict
 from webserver import keep_alive
+from nextcord import Interaction
 
 PREFIX = '$'
 

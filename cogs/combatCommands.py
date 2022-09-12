@@ -14,7 +14,7 @@ class comCommands(commands.Cog):
         self.bot = bot
         self.deathtime = []
         self.healtime = {}
-        self.healtimer = 120
+        self.healtimer = 600
 
     def playerExists(self, ctx):
         self.id = str(ctx.author).split('#')[-1]
@@ -253,7 +253,7 @@ class comCommands(commands.Cog):
             while enemy.stats_dictionary[
                     'Current Health'] > 0 and player.stats_dictionary[
                         'Current Health'] > 0:
-                await asyncio.sleep(2)
+                await asyncio.sleep(1)
 
             if enemy.stats_dictionary['Current Health'] <= 0:
                 await ctx.send('🏆 Player ' + player.Name + ' has defeated ' +

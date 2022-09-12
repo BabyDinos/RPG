@@ -5,7 +5,7 @@ from enemyClass import *
 from playerClass import *
 import nextcord
 from nextcord.ui import Button, View, Select
-
+import os
 
 class AccountCommands(commands.Cog):
 
@@ -194,7 +194,7 @@ class AccountCommands(commands.Cog):
         player = arr[0]
         id = arr[1]
         if not player:
-            await ctx.send('You are not registered', delete_after=20)
+            await ctx.send('You are not registered', ephemeral = True)
         else:
             playerinfo = self.playerInfo(player)
             embed = nextcord.Embed(title='Character Info - ' + player.Name +
@@ -202,6 +202,7 @@ class AccountCommands(commands.Cog):
                                    color=0x000ff)
             embed.add_field(name='Infos', value=playerinfo[0])
             embed.add_field(name='Equipment', value=playerinfo[1])
+            embed.add_field(name = 'Ability', value = player.skilldescription)
             await ctx.send(embed=embed, delete_after=120)
         await ctx.message.delete()
 
