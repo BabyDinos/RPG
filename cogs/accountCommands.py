@@ -6,6 +6,7 @@ from playerClass import *
 import nextcord
 from nextcord.ui import Button, View, Select
 import os
+from nextcord import Interaction, SlashOption
 
 class AccountCommands(commands.Cog):
 
@@ -678,6 +679,15 @@ class AccountCommands(commands.Cog):
                 await bot_message.delete()
         await ctx.message.delete()
 
+    testServerID = int(os.environ['testServerID'])
+
+    @nextcord.slash_command(guild_ids= [testServerID])
+    async def lootbox(self, interaction: Interaction, number: int = SlashOption(name = 'Picker', choices = {'one':1,'two':2,'three':3})):
+        await interaction.response.send_message('Do you want to buy lootboxes, {}?'.format(interaction.user))
+
+    @commands.command()
+    async def context(self, ctx):
+        await ctx.send(ctx)
 
 def setup(bot):
     bot.add_cog(AccountCommands(bot))

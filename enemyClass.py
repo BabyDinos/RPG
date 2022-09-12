@@ -85,7 +85,7 @@ class Panther(Enemy):
         self.DropNumber = int(np.mean([x for x in self.stats_dictionary.values() if type(x) == int]))
 
 class TreeMonster(Enemy):
-    def __init__(self, name, player, bonuses = [0,0,0,0,0,0]):
+    def __init__(self, name, player, bonuses = [3,0,0,0,3,0]):
         Enemy.__init__(self, name, player)
         bonuses = np.asarray(bonuses) + player.Level
         for count, key in enumerate(self.stats_dictionary.keys()):
