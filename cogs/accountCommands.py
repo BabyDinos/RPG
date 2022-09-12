@@ -119,7 +119,7 @@ class AccountCommands(commands.Cog):
                         await bot_message.delete()
                         await ctx.message.delete()
                         await member.edit(nick=username_message.content)
-                        await interaction.response.defer()
+                    
 
                 async def mage_button_callback(interaction):
                     if interaction.user.id == ctx.author.id:
@@ -140,7 +140,7 @@ class AccountCommands(commands.Cog):
                         await bot_message.delete()
                         await ctx.message.delete()
                         await member.edit(nick=username_message.content)
-                        await interaction.response.defer()
+                    
 
                 Warrior_Button = Button(label='Warrior')
                 Warrior_Button.callback = warrior_button_callback
@@ -283,7 +283,7 @@ class AccountCommands(commands.Cog):
 
                     await sent_msg.edit(embed=createEmbed(pageNum=currentPage),
                                         view=myview)
-                    await interaction.response.defer()
+                
 
             async def previous_callback(interaction):
                 if interaction.user.id == ctx.author.id:
@@ -292,7 +292,7 @@ class AccountCommands(commands.Cog):
 
                     await sent_msg.edit(embed=createEmbed(pageNum=currentPage),
                                         view=myview)
-                    await interaction.response.defer()
+                
 
             async def fast_next_callback(interaction):
                 if interaction.user.id == ctx.author.id:
@@ -301,7 +301,7 @@ class AccountCommands(commands.Cog):
 
                     await sent_msg.edit(embed=createEmbed(pageNum=currentPage),
                                         view=myview)
-                    await interaction.response.defer()
+                
 
             async def fast_previous_callback(interaction):
                 if interaction.user.id == ctx.author.id:
@@ -310,7 +310,7 @@ class AccountCommands(commands.Cog):
 
                     await sent_msg.edit(embed=createEmbed(pageNum=currentPage),
                                         view=myview)
-                    await interaction.response.defer()
+                
 
             nextButton = Button(label='>', style=nextcord.ButtonStyle.blurple)
             nextButton.callback = next_callback
@@ -395,7 +395,7 @@ class AccountCommands(commands.Cog):
                         stat = 'Magic Defense'
                     elif dropdown.values[0] == 'Attack Speed':
                         stat = 'Attack Speed'
-                    await interaction.response.defer()
+                
 
             async def amountdropdown_callback(interaction):
                 nonlocal amount
@@ -410,7 +410,7 @@ class AccountCommands(commands.Cog):
                         amount = 3
                     elif amountdropdown.values[0] == '5':
                         amount = 5
-                    await interaction.response.defer()
+                
 
             async def addButton_callback(interaction):
                 if interaction.user.id == ctx.author.id:
@@ -422,7 +422,7 @@ class AccountCommands(commands.Cog):
                     else:
                         await ctx.send('No more Stat Points', delete_after=20)
                     await bot_message.edit(embed=createEmbed(), view=myview)
-                    await interaction.response.defer()
+                
 
             async def subtractButton_callback(interaction):
                 nonlocal amount
@@ -440,7 +440,7 @@ class AccountCommands(commands.Cog):
                         await ctx.send('Cannot decrease any further',
                                        delete_after=20)
                     await bot_message.edit(embed=createEmbed(), view=myview)
-                    await interaction.response.defer()
+                
 
             async def confirmButton_callback(interaction):
                 if interaction.user.id == ctx.author.id:
@@ -450,7 +450,7 @@ class AccountCommands(commands.Cog):
                             'Max Health']
                     sqlCommands.save(id, player, database='player')
                     await bot_message.delete()
-                    await interaction.response.defer()
+                
 
             async def resetButton_callback(interaction):
                 nonlocal original_dictionary
@@ -463,7 +463,7 @@ class AccountCommands(commands.Cog):
                     original_dictionary = player.stats_dictionary.copy()
 
                     await bot_message.edit(embed=createEmbed(), view=myview)
-                    await interaction.response.defer()
+                
 
             dropdown = Select(placeholder='Choose Stat', options=selectoptions)
             dropdown.callback = dropdown_callback
@@ -563,7 +563,7 @@ class AccountCommands(commands.Cog):
                         item = 'Hide'
                     elif dropdown.values[0] == 'Bark':
                         item = 'Bark'
-                    await interaction.response.defer()
+                
 
             async def amountdropdown_callback(interaction):
                 nonlocal amount
@@ -574,7 +574,7 @@ class AccountCommands(commands.Cog):
                         amount = 1
                     elif amountdropdown.values[0] == '5':
                         amount = 5
-                    await interaction.response.defer()
+                
 
             async def increaseAmount_callback(interaction):
                 if interaction.user.id == ctx.author.id:
@@ -583,7 +583,7 @@ class AccountCommands(commands.Cog):
                     else:
                         transaction_dictionary[item] += amount
                     await bot_message.edit(embed=createEmbed(), view=myview)
-                    await interaction.response.defer()
+                
 
             async def decreaseAmount_callback(interaction):
                 if interaction.user.id == ctx.author.id:
@@ -592,10 +592,13 @@ class AccountCommands(commands.Cog):
                     else:
                         transaction_dictionary[item] -= amount
                     await bot_message.edit(embed=createEmbed(), view=myview)
-                    await interaction.response.defer()
+                
 
             async def confirmButton_callback(interaction):
                 if interaction.user.id == ctx.author.id:
+                  if len(transaction_dictionary) < 1:
+                    await bot_message.delete()
+                    await ctx.message.delete()
                     gold_index = player.inventory.index[(
                         player.inventory['Name'] == 'Gold')][0]
                     gold = player.inventory.loc[gold_index, 'Amount']
@@ -626,19 +629,25 @@ class AccountCommands(commands.Cog):
                     if gold < 0:
                         await ctx.send('Not enough Gold', delete_after=20)
                     else:
+                        embed = nextcord.Embed(title = 'Shop Summary', color = nextcord.Color.gold())
+                        buy_string = ''
+                        sell_string = ''
                         for action_dict in order_list:
                             if 'Buy' in action_dict.keys():
-                                player.inventory = addItem(
-                                    player, [action_dict['Buy'][0]],
-                                    [action_dict['Buy'][1]])
+                                player.inventory = addItem(player, [action_dict['Buy'][0]],[action_dict['Buy'][1]])
+                                buy_string += action_dict['Buy'][0] + ': ' + str(action_dict['Buy'][1]) + '\n'
                             elif 'Sell' in action_dict.keys():
-                                player.inventory = subtractItem(
-                                    player, [action_dict['Sell'][0]],
-                                    [abs(action_dict['Sell'][1])])
+                                player.inventory = subtractItem(player, [action_dict['Sell'][0]],[abs(action_dict['Sell'][1])])
+                                sell_string += action_dict['Sell'][0] + ': ' + str(abs(action_dict['Sell'][1])) + '\n'
                         player.inventory.loc[gold_index, 'Amount'] = gold
+                        embed.add_field(name = 'BOUGHT', value = buy_string, inline = True)
+                        embed.add_field(name = 'SOLD', value = sell_string, inline = True)
+                        await bot_message.edit(embed = embed, view = View())
                         sqlCommands.save(id, player, database='player')
+                        await asyncio.sleep(20)
                         await bot_message.delete()
-                        await interaction.response.defer()
+                        await ctx.message.delete()
+                
 
             dropdown = Select(placeholder='Choose Item', options=selectoptions)
             dropdown.callback = dropdown_callback
@@ -651,7 +660,7 @@ class AccountCommands(commands.Cog):
             decreaseAmount = Button(label='Sell',
                                     style=nextcord.ButtonStyle.red)
             decreaseAmount.callback = decreaseAmount_callback
-            confirmButton = Button(label='Finish',
+            confirmButton = Button(label='Confirm Order',
                                    style=nextcord.ButtonStyle.blurple)
             confirmButton.callback = confirmButton_callback
             myview = View(timeout=120)

@@ -37,13 +37,13 @@ class Player:
             return False
 
     def attackSpeed(self, enemy):
-				multiplier = 100
-				decision = random.choices(['Player','Enemy'], weights = [(self.stats_dictionary['Attack Speed']/multiplier), (enemy.stats_dictionary['Attack Speed']/multiplier]))
+      multiplier = 100
+      decision = random.choices(['Player','Enemy'], weights = [self.stats_dictionary['Attack Speed']/multiplier, enemy.stats_dictionary['Attack Speed']/multiplier])
 
-        if decision[0] == 'Player':
-            return 'Player Goes'
-        else:
-            return 'Enemy Goes'
+      if decision[0] == 'Player':
+          return 'Player Goes'
+      else:
+          return 'Enemy Goes'
 
     def attack(self):
         lower_bound = int(self.equipment.loc['Weapon','Stats'][0])

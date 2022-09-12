@@ -66,7 +66,7 @@ class comCommands(commands.Cog):
 
             def createEmbed(situation='\u200b'):
                 embed = nextcord.Embed(color=nextcord.Color.red(),
-                                       title=player.Name + ' is Adventuring')
+                                       title=player.Name + ' is Adventuring <:rpg:1018640907542728747>')
                 player_string = ''
                 for key1, val1, val2 in zip(player.stats_dictionary.keys(),
                                             player.stats_dictionary.values(),
@@ -229,17 +229,17 @@ class comCommands(commands.Cog):
                                                  view=myview)
                     await interaction.response.defer()
 
-            attackButton = Button(label='Attack',
-                                  style=nextcord.ButtonStyle.green)
+            attackButton = Button(label = '\u200b', style=nextcord.ButtonStyle.green, emoji='⚔️')
             attackButton.callback = attack_callback
-            defendButton = Button(label='Defend',
-                                  style=nextcord.ButtonStyle.primary)
+            defendButton = Button(label = '\u200b', style=nextcord.ButtonStyle.primary, emoji='🛡️')
             defendButton.callback = defend_callback
-            powerUpButton = Button(label='PowerUp',
-                                   style=nextcord.ButtonStyle.secondary)
+            powerUpButton = Button(label = '\u200b', style=nextcord.ButtonStyle.secondary,emoji='<:buff:1018644262532948099>')
             powerUpButton.callback = powerup_callback
-            specialButton = Button(label='Special Ability',
-                                   style=nextcord.ButtonStyle.red)
+            if player.role == 'Warrior':
+                emoji = '<:berserker:1018644776700088410>'
+            elif player.role == 'Mage':
+                emoji = '<:fireball:1018645075552653322>'
+            specialButton = Button(label = '\u200b', style=nextcord.ButtonStyle.red, emoji = emoji)
             specialButton.callback = special_callback
             myview = View(timeout=120)
             myview.add_item(attackButton)
@@ -256,8 +256,8 @@ class comCommands(commands.Cog):
                 await asyncio.sleep(2)
 
             if enemy.stats_dictionary['Current Health'] <= 0:
-                await ctx.send('Player ' + player.Name + ' has defeated ' +
-                               enemy.Name,
+                await ctx.send('🏆 Player ' + player.Name + ' has defeated ' +
+                               enemy.Name + ' 🏆',
                                delete_after=20)
                 enemy_drops = enemy.mobDrop(enemy.ListOfDrops,
                                             enemy.ListOfDropWeights,
@@ -272,10 +272,12 @@ class comCommands(commands.Cog):
                 summary_embed = nextcord.Embed(title=player.Name + ' Rewards',
                                                color=nextcord.Color.green())
                 for x, y in zip(enemy_drops[0], enemy_drops[1]):
+                    if x == 'Gold':
+                      x += ' 🪙'
                     summary_embed.add_field(name=x, value=y)
                 summary_embed.add_field(name='\u200b',
                                         value=player.Name + ' gained ' +
-                                        str(enemy.xpDrop()) + ' XP',
+                                        str(enemy.xpDrop()) + ' <:exp:1018668173958053888>',
                                         inline=False)
                 sqlCommands.save(id, player, database='player')
                 await ctx.send(embed=summary_embed, delete_after=20)
@@ -283,8 +285,8 @@ class comCommands(commands.Cog):
             elif player.stats_dictionary['Current Health'] <= 0:
                 player.stats_dictionary = player_total_dictionary
                 player.CurrentHealth = 0
-                await ctx.send('Player ' + player.Name + ' has lost to ' +
-                               enemy.Name,
+                await ctx.send('☠️ Player ' + player.Name + ' has lost to ' +
+                               enemy.Name + ' ☠️',
                                delete_after=20)
                 sqlCommands.save(id, player, database='player')
                 self.deathtime.append(id)
@@ -353,8 +355,8 @@ class comCommands(commands.Cog):
                 self.deathtime.remove(id)
             player.CurrentHealth = player.stats_dictionary['Max Health']
             sqlCommands.save(id, player, database='player')
-            await ctx.send('Player ' + player.Name +
-                           ' has healed to full health',
+            await ctx.send('❤️ Player ' + player.Name +
+                           ' has healed to full health ❤️',
                            delete_after=20)
             self.healtime[id] = time.time() + self.healtimer
             await ctx.message.delete()
