@@ -15,11 +15,6 @@ bot = commands.Bot(command_prefix=PREFIX, intents=intents)
 
 testServerID = int(os.environ['testServerID'])
 
-@bot.slash_command(giuld_ids = [testServerID])
-async def lootbox(interaction : Interaction):
-  await interaction.response.send_message('Hello {}'.format(interaction.user))
-
-
 @bot.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(bot))

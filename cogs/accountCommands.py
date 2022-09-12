@@ -682,12 +682,10 @@ class AccountCommands(commands.Cog):
     testServerID = int(os.environ['testServerID'])
 
     @nextcord.slash_command(guild_ids= [testServerID])
-    async def lootbox(self, interaction: Interaction, number: int = SlashOption(name = 'Picker', choices = {'one':1,'two':2,'three':3})):
-        await interaction.response.send_message('Do you want to buy lootboxes, {}?'.format(interaction.user))
-
-    @commands.command()
-    async def context(self, ctx):
-        await ctx.send(ctx)
+    async def lootbox(self, interaction: Interaction, number: int = SlashOption(name = 'picker', choices = {'one':1,'two':2,'three':3})):
+        await interaction.response.send_message('Do you want to buy lootboxes, {}?'.format(interaction.user), ephemeral= True)
+        await asyncio.sleep(10)
+        await interaction.edit_original_message(content = 'Ok Understood')
 
 def setup(bot):
     bot.add_cog(AccountCommands(bot))
