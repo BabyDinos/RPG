@@ -12,6 +12,7 @@ class AccountCommands(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.testServerID = int(os.environ['testServerID'])
 
     def getPlayer(self, ctx):
         id = str(ctx.author).split('#')[-1]
@@ -24,101 +25,77 @@ class AccountCommands(commands.Cog):
         else:
             return list
 
-    @commands.command()
-    async def register(self, ctx):  #uses baseDifference
-        # checking if player exists already, if they do deny re-registering
-        arr = self.getPlayer(ctx)
+    @nextcord.slash_command(guild_ids= [self.testServerID])
+    async def register(self, interaction: Interaction, name: str):
+        arr = self.getPlayer(interaction.author)
         player = arr[0]
         id = arr[1]
         if player:
-            await ctx.send(
+            await interaction.response.send_message(
                 'This User is already linked to a pre-existing account',
-                delete_after=20)
+                delete_after=20, ephemeral = True)
         else:
             embed = nextcord.Embed(title='Registering',
                                    description='Enter your username: ')
-            bot_message = await ctx.send(embed=embed)
+            await interaction.response.send_message(embed=embed, ephemeral = True)
 
-            try:
-                username_message = await self.bot.wait_for(
-                    'message',
-                    timeout=20,
-                    check=lambda message: message.author == ctx.author and
-                    message.channel == ctx.channel)
+            embed = nextcord.Embed(title='Register',
+                                    description='Welcome ' +
+                                    name)
 
-                embed = nextcord.Embed(title='Register',
-                                       description='Welcome ' +
-                                       str(username_message.content))
+            embed.add_field(
+                name='Warrior',
+                value=
+                '''Warrior's signature ability allows him to greatly increase his stats for a short burst'''
+            )
+            embed.add_field(
+                name='Mage',
+                value=
+                '''Mage's signature ability gives them an attack multiplier'''
+            )
+            embed.set_footer(text='Choose your class: ')
 
-                embed.add_field(
-                    name='Warrior',
-                    value=
-                    '''Warrior's signature ability allows him to greatly increase his stats for a short burst'''
-                )
-                embed.add_field(
-                    name='Mage',
-                    value=
-                    '''Mage's signature ability gives them an attack multiplier'''
-                )
-                embed.set_footer(text='Choose your class: ')
+            async def warrior_button_callback(interaction):
+                member = interaction.author
+                role = nextcord.utils.get(member.guild.roles,
+                                            name='Warrior')
+                await interaction.user.add_roles(role)
+                sqlCommands.save(id,
+                                    Warrior(
+                                        name),
+                                    database='player')
+                embed = nextcord.Embed(
+                    title='Thanks for Registering ' +
+                    name,
+                    description='Welcome to RPG!')
+                await interaction.response.edit_message(embed=embed,
+                                                delete_after=20)
+                await member.edit(nick=name)
+                
 
-                async def warrior_button_callback(interaction):
-                    if interaction.user.id == ctx.author.id:
-                        member = ctx.message.author
-                        role = nextcord.utils.get(member.guild.roles,
-                                                  name='Warrior')
-                        await interaction.user.add_roles(role)
-                        sqlCommands.save(id,
-                                         Warrior(str(
-                                             username_message.content)),
-                                         database='player')
-                        embed = nextcord.Embed(
-                            title='Thanks for Registering ' +
-                            str(username_message.content),
-                            description='Welcome to RPG!')
-                        register_msg = await ctx.send(embed=embed,
-                                                      delete_after=20)
-                        await username_message.delete()
-                        await bot_message.delete()
-                        await ctx.message.delete()
-                        await member.edit(nick=username_message.content)
-                    
-
-                async def mage_button_callback(interaction):
-                    if interaction.user.id == ctx.author.id:
-                        member = ctx.message.author
-                        role = nextcord.utils.get(member.guild.roles,
-                                                  name='Mage')
-                        await interaction.user.add_roles(role)
-                        sqlCommands.save(id,
-                                         Mage(str(username_message.content)),
-                                         database='player')
-                        embed = nextcord.Embed(
-                            title='Thanks for Registering ' +
-                            str(username_message.content),
-                            description='Welcome to RPG!')
-                        register_msg = await ctx.send(embed=embed,
-                                                      delete_after=20)
-                        await username_message.delete()
-                        await bot_message.delete()
-                        await ctx.message.delete()
-                        await member.edit(nick=username_message.content)
-                    
-
-                Warrior_Button = Button(label='Warrior')
-                Warrior_Button.callback = warrior_button_callback
-                Mage_Button = Button(label='Mage')
-                Mage_Button.callback = mage_button_callback
-                myview = View(timeout=120)
-                myview.add_item(Warrior_Button)
-                myview.add_item(Mage_Button)
-
-                await bot_message.edit(embed=embed, view=myview)
-            except asyncio.TimeoutError:
-                await ctx.send('Command Timedout', delete_after=20)
-                await username_message.delete()
-                await bot_message.delete()
-                await ctx.message.delete()
+            async def mage_button_callback(interaction):
+                member = interaction.author
+                role = nextcord.utils.get(member.guild.roles,
+                                            name='Mage')
+                await interaction.user.add_roles(role)
+                sqlCommands.save(id,
+                                    Mage(name),
+                                    database='player')
+                embed = nextcord.Embed(
+                    title='Thanks for Registering ' +
+                    name,
+                    description='Welcome to RPG!')
+                await interaction.response.edit_message(embed=embed,
+                                                delete_after=20)
+                await member.edit(nick=name)
+                
+            Warrior_Button = Button(label='Warrior')
+            Warrior_Button.callback = warrior_button_callback
+            Mage_Button = Button(label='Mage')
+            Mage_Button.callback = mage_button_callback
+            myview = View(timeout=120)
+            myview.add_item(Warrior_Button)
+            myview.add_item(Mage_Button)
 
     @commands.command()
     async def nameChange(self, ctx):
