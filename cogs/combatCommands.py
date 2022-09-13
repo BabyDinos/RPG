@@ -36,7 +36,7 @@ class comCommands(commands.Cog):
     #cooldown time should be same as timeout time for embed
     @nextcord.slash_command(guild_ids = [testServerID], description = 'Go adventuring for loot, exp, and gold')
     @commands.cooldown(1, 30, commands.BucketType.user)
-    async def adventure(self, interaction):
+    async def adventure(self, interaction:Interaction):
         arr = self.getPlayer(interaction)
         player = arr[0]
         id = arr[1]
@@ -280,7 +280,7 @@ class comCommands(commands.Cog):
                 self.deathtime.append(id)
 
     @adventure.error
-    async def on_error(self, interaction, error):
+    async def on_error(self, interaction:Interaction, error):
         if isinstance(error, commands.CommandOnCooldown):
             await interaction.send(
                 'This command is ratelimited, please try again in {:.2f}s'.
@@ -290,99 +290,63 @@ class comCommands(commands.Cog):
         else:
             raise error
 
-    @commands.command()
-    async def equip(self, interaction):
+    @nextcord.slash_command(guild_ids = [testServerID], description = 'Equip armor, weapon, or pet')
+    async def equip(self, interaction:Interaction):
         arr = self.getPlayer(interaction)
         player = arr[0]
         id = arr[1]
         if not player:
-            await interaction.send('You are not registered', delete_after=20)
+            await interaction.response.send_message('You are not registered', ephemeral = True)
         else:
-            try:
-                await interaction.send('What would you like to equip?',
-                               delete_after=20)
-                equipment_message = await self.bot.wait_for(
-                    'message',
-                    timeout=20,
-                    check=lambda message: message.author == interaction.author and
-                    message.channel == interaction.channel)
-                if player.equip(equipment_message.content):
-                    await interaction.send('Equipment changed to: ' +
-                                   equipment_message.content,
-                                   delete_after=20)
-                else:
-                    await interaction.send('Equipment not found', delete_after=20)
-                sqlCommands.save(id, player, database='player')
-            except:
-                await interaction.send('Connection Timedout', delete_after=20)
-                try:
-                    await equipment_message.delete()
-                except:
-                    pass
-        await equipment_message.delete()
-        await interaction.message.delete()
+            if player.equip(equipment_message.content):
+                await interaction.response.send_message('Equipment changed to: ' +
+                               equipment_message.content, ephemeral = True)
+            else:
+                await interaction.response.send_message('Equipment not found', ephemeral = True)
+            sqlCommands.save(id, player, database='player')
 
-    @commands.command()
+    @nextcord.slash_command(guild_ids = [testServerID], description = 'Heal your player to full health')
     async def heal(self, interaction):
         arr = self.getPlayer(interaction)
         player = arr[0]
         id = arr[1]
         if not player:
-            await interaction.send('You are not registered', delete_after=20)
+            await interaction.response.send_message('You are not registered', ephemeral = True)
         elif id in self.healtime:
-            await interaction.send(
+            await interaction.response.send_message(
                 'Heal is on coolddown. Wait {:.2f} seconds until next heal'.
                 format(self.healtime[id] - time.time()),
-                delete_after=10)
-            await interaction.message.delete()
+                ephemeral = True)
         else:
             if id in self.deathtime:
                 self.deathtime.remove(id)
             player.CurrentHealth = player.stats_dictionary['Max Health']
             sqlCommands.save(id, player, database='player')
-            await interaction.send('❤️ Player ' + player.Name +
+            await interaction.response.send_message('❤️ Player ' + player.Name +
                            ' has healed to full health ❤️',
-                           delete_after=20)
+                           ephemeral = True)
             self.healtime[id] = time.time() + self.healtimer
-            await interaction.message.delete()
             await asyncio.sleep(self.healtimer)
             if id in self.healtime:
                 del self.healtime[id]
 
-    @commands.command()
-    async def consume(self, interaction):
+    @nextcord.slash_command(guild_ids = [testServerID], description = 'Eat type consumeables to restore health')
+    async def consume(self, interaction, consumeable:str):
         arr = self.getPlayer(interaction)
         player = arr[0]
         id = arr[1]
         if not player:
-            await interaction.send('You are not registered', delete_after=20)
+            await interaction.response.send_message('You are not registered', ephemeral= True)
         else:
-            try:
-                await interaction.send('What would you like to consume?',
-                               delete_after=20)
-                consumeable_message = await self.bot.wait_for(
-                    'message',
-                    timeout=20,
-                    check=lambda message: message.author == interaction.author and
-                    message.channel == interaction.channel)
-                if player.consume(consumeable_message.content):
-                    await interaction.send(player.Name + ' has consumed ' +
-                                   consumeable_message.content,
-                                   delete_after=20)
+            
+                if player.consume(consumeable):
+                    await interaction.response.send_message(player.Name + ' has consumed ' +
+                                   consumeable, ephemeral = True)
                 else:
-                    await interaction.send(consumeable_message.content +
+                    await interaction.response.send_message(consumeable_message.content +
                                    ' was not found',
-                                   delete_after=20)
+                                   ephemeral = True)
                 sqlCommands.save(id, player, database='player')
-            except:
-                await interaction.send('Connection Timedout', delete_after=20)
-                try:
-                    await consumeable_message.delete()
-                except:
-                    pass
-                await consumeable_message.delete()
-                await interaction.message.delete()
-
 
 def setup(bot):
     bot.add_cog(comCommands(bot))
