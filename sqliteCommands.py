@@ -6,8 +6,6 @@ class sqlCommands:
     def save(key, value, database):
         if database == 'player':
             cache_file = 'player.sqlite'
-        else:
-            cache_file = 'enemy.sqlite'
         try:
             with SqliteDict(cache_file) as mydict:
                 mydict[key] = value
@@ -18,8 +16,6 @@ class sqlCommands:
     def load(key, database):
         if database == 'player':
             cache_file = 'player.sqlite'
-        else:
-            cache_file = 'enemy.sqlite'
         try:
             with SqliteDict(cache_file) as mydict:
                 value = mydict[key]
@@ -33,8 +29,6 @@ class sqlCommands:
     def delete(key, database):
         if database == 'player':
             cache_file = 'player.sqlite'
-        else:
-            cache_file = 'enemy.sqlite'
         try:
             with SqliteDict(cache_file) as mydict:
                 mydict.pop(key)
