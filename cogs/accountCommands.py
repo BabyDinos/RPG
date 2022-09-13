@@ -8,11 +8,13 @@ from nextcord.ui import Button, View, Select
 import os
 from nextcord import Interaction, SlashOption
 
+testServerID = int(os.environ['testServerID'])
+
 class AccountCommands(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self.testServerID = int(os.environ['testServerID'])
+
 
     def getPlayer(self, ctx):
         id = str(ctx.author).split('#')[-1]
@@ -25,9 +27,9 @@ class AccountCommands(commands.Cog):
         else:
             return list
 
-    @nextcord.slash_command(guild_ids= [self.testServerID])
+    @nextcord.slash_command(guild_ids= [testServerID])
     async def register(self, interaction: Interaction, name: str):
-        arr = self.getPlayer(interaction.author)
+        arr = self.getPlayer(interaction.user)
         player = arr[0]
         id = arr[1]
         if player:
@@ -56,7 +58,7 @@ class AccountCommands(commands.Cog):
             embed.set_footer(text='Choose your class: ')
 
             async def warrior_button_callback(interaction):
-                member = interaction.author
+                member = interaction.user
                 role = nextcord.utils.get(member.guild.roles,
                                             name='Warrior')
                 await interaction.user.add_roles(role)
@@ -74,7 +76,7 @@ class AccountCommands(commands.Cog):
                 
 
             async def mage_button_callback(interaction):
-                member = interaction.author
+                member = interaction.user
                 role = nextcord.utils.get(member.guild.roles,
                                             name='Mage')
                 await interaction.user.add_roles(role)
