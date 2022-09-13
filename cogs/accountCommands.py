@@ -15,8 +15,9 @@ class AccountCommands(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    def getPlayer(self, interaction):
-        id = str(interaction.user).split('#')[-1]
+
+    def getPlayer(self, ctx):
+        id = str(ctx.author).split('#')[-1]
         return [sqlCommands.load(id, database='player'), id]
 
     # helper functions for the functions
@@ -25,10 +26,10 @@ class AccountCommands(commands.Cog):
             return list[0] + ' - ' + list[1]
         else:
             return list
-  
-    @nextcord.slash_command(guild_ids= [testServerID], description = 'Creating an Account for RPG')
-    async def register(self, interaction: Interaction, username:str):
-        arr = self.getPlayer(interaction)
+
+    @nextcord.slash_command(guild_ids= [testServerID])
+    async def register(self, interaction: Interaction, name: str):
+        arr = self.getPlayer(interaction.user)
         player = arr[0]
         id = arr[1]
         if player:
@@ -36,6 +37,9 @@ class AccountCommands(commands.Cog):
                 'This User is already linked to a pre-existing account',
                 delete_after=20, ephemeral = True)
         else:
+            embed = nextcord.Embed(title='Registering',
+                                   description='Enter your username: ')
+            await interaction.response.send_message(embed=embed, ephemeral = True)
 
             embed = nextcord.Embed(title='Register',
                                     description='Welcome ' +
@@ -113,13 +117,13 @@ class AccountCommands(commands.Cog):
                     
                     
 
-    @nextcord.slash_command(guild_ids= [testServerID], description = 'Get information about user')
-    async def info(self, interaction: Interaction):  #uses playerInfo
-        arr = self.getPlayer(interaction)
+    @commands.command()
+    async def info(self, ctx):  #uses playerInfo
+        arr = self.getPlayer(ctx)
         player = arr[0]
         id = arr[1]
         if not player:
-            await interaction.response.send_message('You are not registered', ephemeral = True)
+            await ctx.send('You are not registered')
         else:
               # function creates an array that stores formated string of player equipment to be displayed in nextcord.embed
             def playerInfo(player):
@@ -148,43 +152,54 @@ class AccountCommands(commands.Cog):
             embed.add_field(name='Infos', value=playerinfo[0])
             embed.add_field(name='Equipment', value=playerinfo[1])
             embed.add_field(name = 'Ability', value = player.skilldescription)
-            await interaction.response.send_message(embed=embed, delete_after=120, ephemeral = True)
+            await ctx.send(embed=embed, delete_after=120)
+        await ctx.message.delete()
 
-    @nextcord.slash_command(guild_ids= [testServerID], description = 'Delete User')
-    async def delete(self, interaction: Interaction):
-        arr = self.getPlayer(interaction)
+    @commands.command()
+    async def delete(self, ctx):
+        arr = self.getPlayer(ctx)
         player = arr[0]
         id = arr[1]
         if not player:
-            await interaction.response.send_message('You are not registered', delete_after=20, ephemeral = True)
+            await ctx.send('You are not registered', delete_after=20)
         else:
-            confirm = False
-            
-            async def yesButton_callback(interaction):
-                nonlocal confirm
-                if confirm == False:
-                    await interaction.response.edit_message(content = 'Are you sure you want to delete ' + player.Name + '?', delete_after = 20)
-                    confirm = True
-                    return
-                sqlCommands.delete(id, database = 'player')
-                if id in comCommands.deathtime:
-                    comCommands.deathtime.remove(id)
-                await interaction.response.edit_message(content ='User ' + player.Name + ' was deleted', delete_after = 20)
+            msg = await ctx.send('Are you sure you want to delete? - ' +
+                                 player.Name,
+                                 delete_after=20)
+            await msg.add_reaction("\U00002705")
+            await msg.add_reaction("\U0000274C")
 
-            async def noButton_callback(interaction):
-                await interaction.response.edit_message(content = 'Deletetion Cancelled', delete_after = 20)
-                
-              
-            yesButton = Button(label='✅', style=nextcord.ButtonStyle.green)
-            yesButton.callback = yesButton_callback
-            noButton = Button(label = '❌', style = nextcord.ButtonStyle.red)
-            noButton.callback = noButton_callback
-            myview = View()
-            myview.add_item(yesButton)
-            myview.add_item(noButton)
+            def check(reaction, user):
+                return user.id == ctx.author.id and reaction.message.channel.id == ctx.channel.id and str(
+                    reaction.emoji) in ["\U00002705", "\U0000274C"]
 
-            await interaction.response.send_message('Do you want to delete ' + player.Name + '?', view = myview, ephemeral = True, delete_after = 20)
-            
+            try:
+                reaction, user = await self.bot.wait_for('reaction_add',
+                                                         timeout=20,
+                                                         check=check)
+                member = ctx.message.author
+                for role in ['Warrior', 'Mage']:
+                    try:
+                        role = nextcord.utils.get(member.guild.roles,
+                                                  name=role)
+                        await member.remove_roles(role)
+                        await member.edit(nick=None)
+                    except:
+                        pass
+            except asyncio.TimeoutError:
+                try:
+                    await ctx.message.delete()
+                except:
+                    pass
+                await ctx.send('Command Timedout', delete_after=20)
+                return
+            else:
+                if str(reaction.emoji) == "\U00002705":
+                    sqlCommands.delete(id, database='player')
+                    await ctx.send('Account has been deleted', delete_after=20)
+                else:
+                    await ctx.send('Deletion Cancelled', delete_after=20)
+        await ctx.message.delete()
 
     @nextcord.slash_command(guild_ids= [testServerID], description = 'Get inventory of user')
     async def inventory(self, interaction: Interaction):  #uses playerInventory
@@ -598,7 +613,14 @@ class AccountCommands(commands.Cog):
 
             await interaction.response.send_message(embed=createEmbed(),
                                          view=myview,
-                                         delete_after=120, ephemeral = True)
+                                         delete_after=120)
+
+            timed_out = await myview.wait()
+            if timed_out:
+                await bot_message.delete()
+        await ctx.message.delete()
+
+    testServerID = int(os.environ['testServerID'])
 
     @nextcord.slash_command(guild_ids= [testServerID])
     async def lootbox(self, interaction: Interaction, number: int = SlashOption(name = 'picker', choices = {'one':1,'two':2,'three':3})):
