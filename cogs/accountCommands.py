@@ -167,6 +167,8 @@ class AccountCommands(commands.Cog):
                     confirm = True
                     return
                 sqlCommands.delete(id, database = 'player')
+                if id in comCommands.deathtime:
+                    comCommands.deathtime.remove(id)
                 await interaction.response.edit_message(content ='User ' + player.Name + ' was deleted', delete_after = 20)
 
             async def noButton_callback(interaction):
