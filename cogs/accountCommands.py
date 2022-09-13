@@ -27,7 +27,7 @@ class AccountCommands(commands.Cog):
             return list
   
     @nextcord.slash_command(guild_ids= [testServerID])
-    async def register(self, interaction: Interaction, name:str):
+    async def register(self, interaction: Interaction, username:str):
         arr = self.getPlayer(interaction)
         player = arr[0]
         id = arr[1]
@@ -36,14 +36,10 @@ class AccountCommands(commands.Cog):
                 'This User is already linked to a pre-existing account',
                 delete_after=20, ephemeral = True)
         else:
-            embed = nextcord.Embed(title='Registering',
-                                   description='Enter your username: ')
-            await interaction.response.edit_message(embed=embed)
 
             embed = nextcord.Embed(title='Register',
                                     description='Welcome ' +
-                                    name)
-
+                                    username)
             embed.add_field(
                 name='Warrior',
                 value=
@@ -55,7 +51,7 @@ class AccountCommands(commands.Cog):
                 '''Mage's signature ability gives them an attack multiplier'''
             )
             embed.set_footer(text='Choose your class: ')
-
+          
             async def warrior_button_callback(interaction):
                 member = interaction.user
                 role = nextcord.utils.get(member.guild.roles,
@@ -63,15 +59,15 @@ class AccountCommands(commands.Cog):
                 await interaction.user.add_roles(role)
                 sqlCommands.save(id,
                                     Warrior(
-                                        name),
+                                        username),
                                     database='player')
                 embed = nextcord.Embed(
                     title='Thanks for Registering ' +
-                    name,
+                    username,
                     description='Welcome to RPG!')
                 await interaction.response.edit_message(embed=embed,
                                                 delete_after=20)
-                await member.edit(nick=name)
+                await member.edit(nick=username)
                 
 
             async def mage_button_callback(interaction):
@@ -80,15 +76,15 @@ class AccountCommands(commands.Cog):
                                             name='Mage')
                 await interaction.user.add_roles(role)
                 sqlCommands.save(id,
-                                    Mage(name),
+                                    Mage(username),
                                     database='player')
                 embed = nextcord.Embed(
                     title='Thanks for Registering ' +
-                    name,
+                    username,
                     description='Welcome to RPG!')
                 await interaction.response.edit_message(embed=embed,
                                                 delete_after=20)
-                await member.edit(nick=name)
+                await member.edit(nick=username)
                 
             Warrior_Button = Button(label='Warrior')
             Warrior_Button.callback = warrior_button_callback
@@ -98,6 +94,9 @@ class AccountCommands(commands.Cog):
             myview.add_item(Warrior_Button)
             myview.add_item(Mage_Button)
 
+            await interaction.response.send_message(embed=embed, ephemeral = True, view = myview)
+
+          
     @commands.command()
     async def nameChange(self, ctx):
         arr = self.getPlayer(ctx)
