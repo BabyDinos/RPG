@@ -26,7 +26,7 @@ class AccountCommands(commands.Cog):
         else:
             return list
   
-    @nextcord.slash_command(guild_ids= [testServerID])
+    @nextcord.slash_command(guild_ids= [testServerID], description = 'Creating an Account for RPG')
     async def register(self, interaction: Interaction, username:str):
         arr = self.getPlayer(interaction)
         player = arr[0]
@@ -97,38 +97,23 @@ class AccountCommands(commands.Cog):
             await interaction.response.send_message(embed=embed, ephemeral = True, view = myview)
 
           
-    @commands.command()
-    async def nameChange(self, ctx):
-        arr = self.getPlayer(ctx)
+    @nextcord.slash_command(guild_ids= [testServerID], description = 'Change name of user')
+    async def namechange(self, interaction: Interaction, username:str):
+        arr = self.getPlayer(interaction)
         player = arr[0]
         id = arr[1]
         if not player:
-            await ctx.send('You are not registered', delete_after=20)
+            await interaction.response.send_message('You are not registered', delete_after=20, ephemeral = True)
         else:
-            await ctx.send('What is your new Username?', delete_after=20)
-            try:
-                message = await self.bot.wait_for(
-                    'message',
-                    timeout=20,
-                    check=lambda message: message.author == ctx.author and
-                    message.channel == ctx.channel)
-                if message:
-                    player.Name = str(message.content)
-                    sqlCommands.save(id, player, database='player')
-                    await ctx.send('Your name has been changed to ' +
-                                   str(message.content),
-                                   delete_after=20)
-                await message.delete()
-                await ctx.message.delete()
-            except asyncio.TimeoutError:
-                await ctx.send('Command Timedout', delete_after=20)
-                try:
-                    await message.delete()
-                except:
-                    pass
-        await ctx.message.delete()
+            temp = player.Name
+            player.Name = username
+            sqlCommands.save(id, player, database='player')
+            await interaction.response.send_message('Username has been changed from ' + temp + ' to ' + username, delete_after=20, ephemeral = True)
+            
+                    
+                    
 
-    @nextcord.slash_command(guild_ids= [testServerID])
+    @nextcord.slash_command(guild_ids= [testServerID], description = 'Get information about user')
     async def info(self, interaction: Interaction):  #uses playerInfo
         arr = self.getPlayer(interaction)
         player = arr[0]
@@ -165,7 +150,7 @@ class AccountCommands(commands.Cog):
             embed.add_field(name = 'Ability', value = player.skilldescription)
             await interaction.response.send_message(embed=embed, delete_after=120, ephemeral = True)
 
-    @nextcord.slash_command(guild_ids= [testServerID])
+    @nextcord.slash_command(guild_ids= [testServerID], description = 'Delete User')
     async def delete(self, interaction: Interaction):
         arr = self.getPlayer(interaction)
         player = arr[0]
@@ -199,13 +184,13 @@ class AccountCommands(commands.Cog):
             await interaction.response.send_message('Do you want to delete ' + player.Name + '?', view = myview, ephemeral = True, delete_after = 20)
             
 
-    @commands.command()
-    async def inventory(self, ctx):  #uses playerInventory
-        arr = self.getPlayer(ctx)
+    @nextcord.slash_command(guild_ids= [testServerID], description = 'Get inventory of user')
+    async def inventory(self, interaction: Interaction):  #uses playerInventory
+        arr = self.getPlayer(interaction)
         player = arr[0]
         id = arr[1]
         if not player:
-            await ctx.send('You are not registered', delete_after=20)
+            await interaction.response.send_message('You are not registered', delete_after=20, ephemeral = True)
         else:
               # Converts dataframe inventory to a nested dictionary for nextcord to display
             def playerInventory(player):
@@ -241,39 +226,35 @@ class AccountCommands(commands.Cog):
             currentPage = 0
 
             async def next_callback(interaction):
-                if interaction.user.id == ctx.author.id:
-                    nonlocal currentPage, sent_msg
-                    currentPage += 1
+                nonlocal currentPage
+                currentPage += 1
 
-                    await sent_msg.edit(embed=createEmbed(pageNum=currentPage),
-                                        view=myview)
+                await interaction.response.edit_message(embed=createEmbed(pageNum=currentPage),
+                                    view=myview)
                 
 
             async def previous_callback(interaction):
-                if interaction.user.id == ctx.author.id:
-                    nonlocal currentPage, sent_msg
-                    currentPage -= 1
+                nonlocal currentPage
+                currentPage -= 1
 
-                    await sent_msg.edit(embed=createEmbed(pageNum=currentPage),
-                                        view=myview)
+                await interaction.response.edit_message(embed=createEmbed(pageNum=currentPage),
+                                    view=myview)
                 
 
             async def fast_next_callback(interaction):
-                if interaction.user.id == ctx.author.id:
-                    nonlocal currentPage, sent_msg
-                    currentPage = len(list(playerinv)) - 1
+                nonlocal currentPage
+                currentPage = len(list(playerinv)) - 1
 
-                    await sent_msg.edit(embed=createEmbed(pageNum=currentPage),
-                                        view=myview)
+                await interaction.response.edit_message(embed=createEmbed(pageNum=currentPage),
+                                    view=myview)
                 
 
             async def fast_previous_callback(interaction):
-                if interaction.user.id == ctx.author.id:
-                    nonlocal currentPage, sent_msg
-                    currentPage = 0
+                nonlocal currentPage
+                currentPage = 0
 
-                    await sent_msg.edit(embed=createEmbed(pageNum=currentPage),
-                                        view=myview)
+                await interaction.response.edit_message(embed=createEmbed(pageNum=currentPage),
+                                    view=myview)
                 
 
             nextButton = Button(label='>', style=nextcord.ButtonStyle.blurple)
@@ -293,21 +274,16 @@ class AccountCommands(commands.Cog):
             myview.add_item(previousButton)
             myview.add_item(nextButton)
             myview.add_item(fastNextButton)
-            sent_msg = await ctx.send(embed=createEmbed(pageNum=currentPage),
-                                      view=myview)
-            timed_out = await myview.wait()
-            if timed_out:
-                await sent_msg.delete()
-                await ctx.message.delete()
-            await ctx.message.delete()
+            await interaction.response.send_message(embed=createEmbed(pageNum=currentPage),
+                                      view=myview, ephemeral = True)
 
-    @commands.command()
-    async def statPoints(self, ctx):
-        arr = self.getPlayer(ctx)
+    @nextcord.slash_command(guild_ids= [testServerID], description = 'Adjust player stats')
+    async def statpoints(self, interaction):
+        arr = self.getPlayer(interaction)
         player = arr[0]
         id = arr[1]
         if not player:
-            await ctx.send('You are not registered', delete_after=20)
+            await interaction.response.send_message('You are not registered', delete_after=20)
         else:
             statpoints_original = player.statpoints
             original_dictionary = player.stats_dictionary.copy()
@@ -346,87 +322,84 @@ class AccountCommands(commands.Cog):
 
             async def dropdown_callback(interaction):
                 nonlocal stat
-                if interaction.user.id == ctx.author.id:
-                    if dropdown.values[0] == 'HP':
-                        stat = 'Max Health'
-                    elif dropdown.values[0] == 'Attack':
-                        stat = 'Attack'
-                    elif dropdown.values[0] == 'Magic Attack':
-                        stat = 'Magic Attack'
-                    elif dropdown.values[0] == 'Defense':
-                        stat = 'Defense'
-                    elif dropdown.values[0] == 'Magic Defense':
-                        stat = 'Magic Defense'
-                    elif dropdown.values[0] == 'Attack Speed':
-                        stat = 'Attack Speed'
-                
+                if dropdown.values[0] == 'HP':
+                    stat = 'Max Health'
+                elif dropdown.values[0] == 'Attack':
+                    stat = 'Attack'
+                elif dropdown.values[0] == 'Magic Attack':
+                    stat = 'Magic Attack'
+                elif dropdown.values[0] == 'Defense':
+                    stat = 'Defense'
+                elif dropdown.values[0] == 'Magic Defense':
+                    stat = 'Magic Defense'
+                elif dropdown.values[0] == 'Attack Speed':
+                    stat = 'Attack Speed'
+              
 
             async def amountdropdown_callback(interaction):
                 nonlocal amount
-                if interaction.user.id == ctx.author.id:
-                    if amountdropdown.values[0] == 'All':
-                        amount = player.statpoints
-                    elif amountdropdown.values[0] == '1':
-                        amount = 1
-                    elif amountdropdown.values[0] == '2':
-                        amount = 2
-                    elif amountdropdown.values[0] == '3':
-                        amount = 3
-                    elif amountdropdown.values[0] == '5':
-                        amount = 5
+                
+                if amountdropdown.values[0] == 'All':
+                    amount = player.statpoints
+                elif amountdropdown.values[0] == '1':
+                    amount = 1
+                elif amountdropdown.values[0] == '2':
+                    amount = 2
+                elif amountdropdown.values[0] == '3':
+                    amount = 3
+                elif amountdropdown.values[0] == '5':
+                    amount = 5
                 
 
             async def addButton_callback(interaction):
-                if interaction.user.id == ctx.author.id:
-                    if player.statpoints >= amount > 0:
-                        player.stats_dictionary[stat] += amount
-                        player.statpoints -= amount
-                    elif amount == 0:
-                        await ctx.send('Choose an Amount', delete_after=20)
-                    else:
-                        await ctx.send('No more Stat Points', delete_after=20)
-                    await bot_message.edit(embed=createEmbed(), view=myview)
-                
+                if player.statpoints >= amount > 0:
+                    player.stats_dictionary[stat] += amount
+                    player.statpoints -= amount
+                elif amount == 0:
+                    await interaction.response.send_message('Choose an Amount', delete_after=20, ephemeral = True)
+                else:
+                    await interaction.response.send_message('No more Stat Points', delete_after=20, ephemeral = True)
+                await interaction.response.edit_message(embed=createEmbed(), view=myview)
+            
 
             async def subtractButton_callback(interaction):
                 nonlocal amount
-                if interaction.user.id == ctx.author.id:
-                    if player.statpoints == amount:
-                        player.statpoints += (player.stats_dictionary[stat] -
-                                              1)
-                        player.stats_dictionary[stat] -= (
-                            player.stats_dictionary[stat] - 1)
-                        amount = player.statpoints
-                    elif player.stats_dictionary[stat] - amount >= 1:
-                        player.stats_dictionary[stat] -= amount
-                        player.statpoints += amount
-                    else:
-                        await ctx.send('Cannot decrease any further',
-                                       delete_after=20)
-                    await bot_message.edit(embed=createEmbed(), view=myview)
+                if player.statpoints == amount:
+                    player.statpoints += (player.stats_dictionary[stat] -
+                                          1)
+                    player.stats_dictionary[stat] -= (
+                        player.stats_dictionary[stat] - 1)
+                    amount = player.statpoints
+                elif player.stats_dictionary[stat] - amount >= 1:
+                    player.stats_dictionary[stat] -= amount
+                    player.statpoints += amount
+                else:
+                    await interaction.response.send_message('Cannot decrease any further',
+                                   delete_after=20, ephemeral = True)
+                await interaction.response.edit_message(embed=createEmbed(), view=myview)
                 
 
             async def confirmButton_callback(interaction):
-                if interaction.user.id == ctx.author.id:
-                    if player.stats_dictionary[
-                            'Max Health'] < original_dictionary['Max Health']:
-                        player.CurrentHealth = player.stats_dictionary[
-                            'Max Health']
-                    sqlCommands.save(id, player, database='player')
-                    await bot_message.delete()
+                if player.stats_dictionary[
+                        'Max Health'] < original_dictionary['Max Health']:
+                    player.CurrentHealth = player.stats_dictionary[
+                        'Max Health']
+                sqlCommands.save(id, player, database='player')
+                embed = nextcord.Embed(title = 'Stat Points Allocated')
+                await interaction.response.edit_message(embed = embed, view = View())
+      
                 
 
             async def resetButton_callback(interaction):
                 nonlocal original_dictionary
                 nonlocal statpoints_original
-                if interaction.user.id == ctx.author.id:
-                    player.stats_dictionary = original_dictionary
-                    player.statpoints = statpoints_original
+                player.stats_dictionary = original_dictionary
+                player.statpoints = statpoints_original
 
-                    statpoints_original = player.statpoints
-                    original_dictionary = player.stats_dictionary.copy()
+                statpoints_original = player.statpoints
+                original_dictionary = player.stats_dictionary.copy()
 
-                    await bot_message.edit(embed=createEmbed(), view=myview)
+                await interaction.response.edit_message(embed=createEmbed(), view=myview)
                 
 
             dropdown = Select(placeholder='Choose Stat', options=selectoptions)
@@ -452,24 +425,19 @@ class AccountCommands(commands.Cog):
             myview.add_item(confirmButton)
             myview.add_item(resetButton)
 
-            bot_message = await ctx.send(embed=createEmbed(),
+            message = await interaction.response.send_message(embed=createEmbed(),
                                          view=myview,
-                                         delete_after=120)
+                                         delete_after=120, ephemeral = True)
 
-            timed_out = await myview.wait()
-            if timed_out:
-                await bot_message.delete()
-                await ctx.message.delete()
 
-    @commands.command()
-    async def shop(self, ctx):
-        arr = self.getPlayer(ctx)
+    @nextcord.slash_command(guild_ids= [testServerID], description = 'Open shop to buy and sell items')
+    async def shop(self, interaction:Interaction):
+        arr = self.getPlayer(interaction)
         player = arr[0]
         id = arr[1]
         if not player:
-            await ctx.send('You are not registered', delete_after=20)
+            await interaction.response.send_message('You are not registered', delete_after=20, ephemeral = True)
         else:
-
             transaction_dictionary = {}
             costs_dictionary = {
                 'Stone': {
@@ -518,100 +486,92 @@ class AccountCommands(commands.Cog):
 
             async def dropdown_callback(interaction):
                 nonlocal item
-                if interaction.user.id == ctx.author.id:
-                    if dropdown.values[0] == 'Stone':
-                        item = 'Stone'
-                    elif dropdown.values[0] == 'Meat':
-                        item = 'Meat'
-                    elif dropdown.values[0] == 'Hide':
-                        item = 'Hide'
-                    elif dropdown.values[0] == 'Bark':
-                        item = 'Bark'
+                if dropdown.values[0] == 'Stone':
+                    item = 'Stone'
+                elif dropdown.values[0] == 'Meat':
+                    item = 'Meat'
+                elif dropdown.values[0] == 'Hide':
+                    item = 'Hide'
+                elif dropdown.values[0] == 'Bark':
+                    item = 'Bark'
                 
 
             async def amountdropdown_callback(interaction):
                 nonlocal amount
-                if interaction.user.id == ctx.author.id:
-                    if amountdropdown.values[0] == '10':
-                        amount = 10
-                    elif amountdropdown.values[0] == '1':
-                        amount = 1
-                    elif amountdropdown.values[0] == '5':
-                        amount = 5
+                if amountdropdown.values[0] == '10':
+                    amount = 10
+                elif amountdropdown.values[0] == '1':
+                    amount = 1
+                elif amountdropdown.values[0] == '5':
+                    amount = 5
                 
 
             async def increaseAmount_callback(interaction):
-                if interaction.user.id == ctx.author.id:
-                    if item not in transaction_dictionary:
-                        transaction_dictionary[item] = amount
-                    else:
-                        transaction_dictionary[item] += amount
-                    await bot_message.edit(embed=createEmbed(), view=myview)
+                if item not in transaction_dictionary:
+                    transaction_dictionary[item] = amount
+                else:
+                    transaction_dictionary[item] += amount
+                await interaction.response.edit_message(embed=createEmbed(), view=myview)
                 
 
             async def decreaseAmount_callback(interaction):
-                if interaction.user.id == ctx.author.id:
-                    if item not in transaction_dictionary:
-                        transaction_dictionary[item] = -amount
-                    else:
-                        transaction_dictionary[item] -= amount
-                    await bot_message.edit(embed=createEmbed(), view=myview)
+                if item not in transaction_dictionary:
+                    transaction_dictionary[item] = -amount
+                else:
+                    transaction_dictionary[item] -= amount
+                await interaction.response.edit_message(embed=createEmbed(), view=myview)
                 
 
             async def confirmButton_callback(interaction):
-                if interaction.user.id == ctx.author.id:
-                  if len(transaction_dictionary) < 1:
-                    await bot_message.delete()
-                    await ctx.message.delete()
-                    gold_index = player.inventory.index[(
-                        player.inventory['Name'] == 'Gold')][0]
-                    gold = player.inventory.loc[gold_index, 'Amount']
+                if len(transaction_dictionary) < 0 or all(value == 0 for value in transaction_dictionary.values()):
+                    embed = nextcord.Embed(title = 'Nothing Bought or Sold')
+                    await interaction.response.edit_message(embed = embed, view = View())
+                    return
+                gold_index = player.inventory.index[(
+                    player.inventory['Name'] == 'Gold')][0]
+                gold = player.inventory.loc[gold_index, 'Amount']
 
-                    order_list = []
+                order_list = []
+    
+                for x, y in transaction_dictionary.items():
+                    if y >= 0:
+                        gold -= costs_dictionary[x]['Buy'] * y
+                        order_list.append({'Buy': [x, y]})
+                    elif y < 0:
+                        try:
+                            index = player.inventory.index[(
+                                player.inventory['Name'] == x)][0]
+                            if player.inventory.loc[index,
+                                                    'Amount'] < abs(y):
+                                return await interaction.response.send_message(
+                                    "Don't have enough " + x + ' to sell',
+                                    delete_after=20, ephemeral = True)
+                            else:
+                                order_list.append({'Sell': [x, y]})
+                        except:
+                            return await interaction.response.send_message("Don't have enough " +
+                                                  x + ' to sell',
+                                                  delete_after=20, ephemeral = 20)
+                        gold += costs_dictionary[x]['Sell'] * abs(y)
 
-                    for x, y in transaction_dictionary.items():
-                        if y >= 0:
-                            gold -= costs_dictionary[x]['Buy'] * y
-                            order_list.append({'Buy': [x, y]})
-                        elif y < 0:
-                            try:
-                                index = player.inventory.index[(
-                                    player.inventory['Name'] == x)][0]
-                                if player.inventory.loc[index,
-                                                        'Amount'] < abs(y):
-                                    return await ctx.send(
-                                        "Don't have enough " + x + ' to sell',
-                                        delete_after=20)
-                                else:
-                                    order_list.append({'Sell': [x, y]})
-                            except:
-                                return await ctx.send("Don't have enough " +
-                                                      x + ' to sell',
-                                                      delete_after=20)
-                            gold += costs_dictionary[x]['Sell'] * abs(y)
-
-                    if gold < 0:
-                        await ctx.send('Not enough Gold', delete_after=20)
-                    else:
-                        embed = nextcord.Embed(title = 'Shop Summary', color = nextcord.Color.gold())
-                        buy_string = ''
-                        sell_string = ''
-                        for action_dict in order_list:
-                            if 'Buy' in action_dict.keys():
-                                player.inventory = addItem(player, [action_dict['Buy'][0]],[action_dict['Buy'][1]])
-                                buy_string += action_dict['Buy'][0] + ': ' + str(action_dict['Buy'][1]) + '\n'
-                            elif 'Sell' in action_dict.keys():
-                                player.inventory = subtractItem(player, [action_dict['Sell'][0]],[abs(action_dict['Sell'][1])])
-                                sell_string += action_dict['Sell'][0] + ': ' + str(abs(action_dict['Sell'][1])) + '\n'
-                        player.inventory.loc[gold_index, 'Amount'] = gold
-                        embed.add_field(name = 'BOUGHT', value = buy_string, inline = True)
-                        embed.add_field(name = 'SOLD', value = sell_string, inline = True)
-                        await bot_message.edit(embed = embed, view = View())
-                        sqlCommands.save(id, player, database='player')
-                        await asyncio.sleep(20)
-                        await bot_message.delete()
-                        await ctx.message.delete()
-                
+                if gold < 0:
+                    await interaction.response.send_message('Not enough Gold', delete_after=20, ephemeral = True)
+                else:
+                    embed = nextcord.Embed(title = 'Shop Summary', color = nextcord.Color.gold())
+                    buy_string = '\u200b'
+                    sell_string = '\u200b'
+                    for action_dict in order_list:
+                        if 'Buy' in action_dict.keys():
+                            player.inventory = addItem(player, [action_dict['Buy'][0]],[action_dict['Buy'][1]])
+                            buy_string += action_dict['Buy'][0] + ': ' + str(action_dict['Buy'][1]) + '\n'
+                        elif 'Sell' in action_dict.keys():
+                            player.inventory = subtractItem(player, [action_dict['Sell'][0]],[abs(action_dict['Sell'][1])])
+                            sell_string += action_dict['Sell'][0] + ': ' + str(abs(action_dict['Sell'][1])) + '\n'
+                    player.inventory.loc[gold_index, 'Amount'] = gold
+                    embed.add_field(name = 'BOUGHT', value = buy_string, inline = True)
+                    embed.add_field(name = 'SOLD', value = sell_string, inline = True)
+                    await interaction.response.edit_message(embed = embed, view = View())
+                    sqlCommands.save(id, player, database='player')
 
             dropdown = Select(placeholder='Choose Item', options=selectoptions)
             dropdown.callback = dropdown_callback
@@ -634,15 +594,9 @@ class AccountCommands(commands.Cog):
             myview.add_item(decreaseAmount)
             myview.add_item(confirmButton)
 
-            bot_message = await ctx.send(embed=createEmbed(),
+            await interaction.response.send_message(embed=createEmbed(),
                                          view=myview,
-                                         delete_after=120)
-
-            timed_out = await myview.wait()
-            if timed_out:
-                await bot_message.delete()
-        await ctx.message.delete()
-
+                                         delete_after=120, ephemeral = True)
 
     @nextcord.slash_command(guild_ids= [testServerID])
     async def lootbox(self, interaction: Interaction, number: int = SlashOption(name = 'picker', choices = {'one':1,'two':2,'three':3})):
