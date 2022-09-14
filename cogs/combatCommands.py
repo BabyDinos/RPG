@@ -39,10 +39,6 @@ class comCommands(commands.Cog):
 
     #cooldown time should be same as timeout time for embed
     @nextcord.slash_command(guild_ids = [testServerID], description = 'Go adventuring for loot, exp, and gold')
-<<<<<<< HEAD
-=======
-    @commands.cooldown(1, 30, commands.BucketType.user)
->>>>>>> origin/main
     async def adventure(self, interaction:Interaction):
         arr = self.getPlayer(interaction)
         player = arr[0]
@@ -299,21 +295,6 @@ class comCommands(commands.Cog):
                 await asyncio.sleep(self.adventuretimer)
                 if id in self.adventuretime:
                     del self.adventuretime[id]
-
-<<<<<<< HEAD
-=======
-    @adventure.error
-    async def on_error(self, interaction:Interaction, error):
-        if isinstance(error, commands.CommandOnCooldown):
-            await interaction.send(
-                'This command is ratelimited, please try again in {:.2f}s'.
-                format(error.retry_after),
-                delete_after=20)
-            await interaction.message.delete()
-        else:
-            raise error
-
->>>>>>> origin/main
     @nextcord.slash_command(guild_ids = [testServerID], description = 'Equip armor, weapon, or pet')
     async def equip(self, interaction:Interaction):
         arr = self.getPlayer(interaction)
