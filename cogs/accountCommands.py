@@ -111,9 +111,6 @@ class AccountCommands(commands.Cog):
             sqlCommands.save(id, player, database='player')
             await interaction.response.send_message('Username has been changed from ' + temp + ' to ' + username, delete_after=20, ephemeral = True)
             
-                    
-                    
-
     @nextcord.slash_command(guild_ids= [testServerID], description = 'Get information about user')
     async def info(self, interaction: Interaction, discordtag: Optional[int] = SlashOption(required=False)):  #uses playerInfo
         if discordtag:
@@ -433,7 +430,7 @@ class AccountCommands(commands.Cog):
                                          delete_after=120, ephemeral = True)
 
 
-    @nextcord.slash_command(guild_ids= [testServerID], description = 'Open shop to buy and sell items')
+    @nextcord.slash_command(guild_ids= [testServerID], description = 'Open shop to buy and sell items. Prices are in gold, listed in the dropdown menus')
     async def shop(self, interaction:Interaction):
         arr = self.getPlayer(interaction)
         player = arr[0]
@@ -603,11 +600,100 @@ class AccountCommands(commands.Cog):
                                          view=myview,
                                          delete_after=120, ephemeral = True)
 
-    @nextcord.slash_command(guild_ids= [testServerID])
-    async def lootbox(self, interaction: Interaction, number: int = SlashOption(name = 'picker', choices = {'one':1,'two':2,'three':3})):
-        await interaction.response.send_message('Do you want to buy lootboxes, {}?'.format(interaction.user), ephemeral= True)
-        await asyncio.sleep(10)
-        await interaction.edit_original_message(content = 'Ok Understood')
+    
+    @nextcord.slash_command(guild_ids= [testServerID], description = 'Lootboxes')
+    async def lootbox(self, interaction: Interaction):
+        arr = self.getPlayer(interaction)
+        player = arr[0]
+        id = arr[1]
+        if not player:
+            await interaction.response.send_message('You are not registered', delete_after=20, ephemeral = True)
+        else:
+            transaction_dictionary = {}
+            items_needed = ['Stone','Hide','Bark','Golden Apple','Panther Tooth','Gem']
+            index_list = player.inventory.index[player.inventory['Name'] == items_needed]
+            for name, amount in zip(items_needed, player.inventory.loc[index_list,'Amount']):
+                transaction_dictionary[name] = amount
 
+
+            
+            costs_dictionary = {
+                'Common Lootbox': {
+                    'Stone': 5,
+                    'Hide': 5,
+                    'Bark': 5
+                },
+                'Premium Lootbox': {
+                    'Panther Tooth': 5,
+                    'Golden Apple': 5,
+                    'Gem': 5
+                }
+            }
+            item = ''
+            amount = 0
+
+            def createEmbed():
+                embed = nextcord.Embed(title='Lootbox Exchange',
+                                       description='Exchange items for lootboxes')
+                for x, y in transaction_dictionary.items():
+                    embed.add_field(name=x, value=y)
+                return embed
+
+            selectoptions = [
+                nextcord.SelectOption(label='Common Lootbox',
+                                      description='5 Stone, 5 Hide, 5 Bark'),
+                nextcord.SelectOption(label='Premium Lootbox',
+                                      description='5 Gem, 5 Panther Tooth, 5 Golden Apple')
+            ]
+
+            amountselectoptions = [
+                nextcord.SelectOption(label='1'),
+                nextcord.SelectOption(label='5'),
+                nextcord.SelectOption(label='10')
+            ]
+
+            async def dropdown_callback(interaction):
+                nonlocal item
+                if dropdown.values[0] == 'Common Lootbox':
+                    item = 'Common Lootbox'
+                elif dropdown.values[0] == 'Premium Lootbox':
+                    item = 'Premium Lootbox'
+
+            async def amountdropdown_callback(interaction):
+                nonlocal amount
+                if amountdropdown.values[0] == '1':
+                    amount = 1
+                elif amountdropdown.values[0] == '5':
+                    amount = 5
+                elif amountdropdown.values[0] == '10':
+                    amount = 10
+                
+
+            async def increaseAmount_callback(interaction):
+                if item not in transaction_dictionary:
+                    transaction_dictionary[item] = amount
+                else:
+                    transaction_dictionary[item] += amount
+                await interaction.response.edit_message(embed=createEmbed(), view=myview)
+                
+
+            async def decreaseAmount_callback(interaction):
+                if item not in transaction_dictionary:
+                    transaction_dictionary[item] = -amount
+                else:
+                    transaction_dictionary[item] -= amount
+                await interaction.response.edit_message(embed=createEmbed(), view=myview)
+                
+
+            async def confirmButton_callback(interaction):
+                if len(transaction_dictionary) < 0 or all(value == 0 for value in transaction_dictionary.values()):
+                    embed = nextcord.Embed(title = 'Nothing Exchanged')
+                    await interaction.response.edit_message(embed = embed, view = View())
+                    return
+                gold_index = player.inventory.index[(
+                    player.inventory['Name'] == 'Gold')][0]
+                gold = player.inventory.loc[gold_index, 'Amount']
+                original_gold = gold
+          
 def setup(bot):
     bot.add_cog(AccountCommands(bot))

@@ -19,7 +19,6 @@ async def on_ready():
     if not os.path.exists('player.sqlite'):
         SqliteDict('player.sqlite')
 
-
 for filename in os.listdir("./cogs"):
     if filename.endswith(".py"):
         # cut off the .py from the file name

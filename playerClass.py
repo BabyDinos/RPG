@@ -159,3 +159,4 @@ def subtractItem(player, nameOfItem, amounts):
             if newVal == 0:
                 player.inventory = player.inventory.drop(index)
     return player.inventory
+

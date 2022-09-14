@@ -19,6 +19,8 @@ class comCommands(commands.Cog):
         self.healtime = {}
         self.deathtime = []
         self.healtimer = 600
+        self.adventuretime = {}
+        self.adventuretimer = 30
 
     def getPlayer(self, interaction):
         id = str(interaction.user).split('#')[-1]
@@ -37,17 +39,21 @@ class comCommands(commands.Cog):
 
     #cooldown time should be same as timeout time for embed
     @nextcord.slash_command(guild_ids = [testServerID], description = 'Go adventuring for loot, exp, and gold')
-    @commands.cooldown(1, 30, commands.BucketType.user)
     async def adventure(self, interaction:Interaction):
         arr = self.getPlayer(interaction)
         player = arr[0]
         id = arr[1]
         if not player:
-            await interaction.response.send_message('You are not registered', delete_after=20, ephemeral = True)
+            await interaction.response.send_message('You are not registered', ephemeral = True)
         elif id in self.deathtime:
             await interaction.response.send_message(
                 'You are dead. You must heal before venturing again',
                 delete_after=10, ephemeral = True)
+        elif id in self.adventuretime:
+            await interaction.response.send_message(
+                "You're tired after your adventure. Please wait {:.2f} seconds until you can adventure again".
+                format(self.adventuretime[id] - time.time()),
+                ephemeral = True)
         else:
             enemy = self.enemySpawn(player)
             # use to store the original dictionary
@@ -272,6 +278,11 @@ class comCommands(commands.Cog):
                                         inline=False)
                 sqlCommands.save(id, player, database='player')
                 await interaction.edit_original_message(embed = summary_embed, view = View())
+                self.adventuretime[id] = time.time() + self.adventuretimer
+                await asyncio.sleep(self.adventuretimer)
+                if id in self.adventuretime:
+                    del self.adventuretime[id]
+                  
 
             elif player.stats_dictionary['Current Health'] <= 0:
                 player.stats_dictionary = player_total_dictionary
@@ -280,17 +291,10 @@ class comCommands(commands.Cog):
                                enemy.Name + ' ☠️'), view = View())
                 sqlCommands.save(id, player, database='player')
                 self.deathtime.append(id)
-
-    @adventure.error
-    async def on_error(self, interaction:Interaction, error):
-        if isinstance(error, commands.CommandOnCooldown):
-            await interaction.send(
-                'This command is ratelimited, please try again in {:.2f}s'.
-                format(error.retry_after),
-                delete_after=20)
-            await interaction.message.delete()
-        else:
-            raise error
+                self.adventuretime[id] = time.time() + self.adventuretimer
+                await asyncio.sleep(self.adventuretimer)
+                if id in self.adventuretime:
+                    del self.adventuretime[id]
 
     @nextcord.slash_command(guild_ids = [testServerID], description = 'Equip armor, weapon, or pet')
     async def equip(self, interaction:Interaction):
@@ -322,6 +326,8 @@ class comCommands(commands.Cog):
         else:
             if id in self.deathtime:
                 self.deathtime.remove(id)
+            if id in self.adventuretime:
+                del self.adventuretime[id]
             player.CurrentHealth = player.stats_dictionary['Max Health']
             sqlCommands.save(id, player, database='player')
             await interaction.response.send_message('❤️ Player ' + player.Name +
