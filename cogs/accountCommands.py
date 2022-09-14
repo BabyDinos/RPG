@@ -111,7 +111,6 @@ class AccountCommands(commands.Cog):
             sqlCommands.save(id, player, database='player')
             await interaction.response.send_message('Username has been changed from ' + temp + ' to ' + username, delete_after=20, ephemeral = True)
             
-<<<<<<< HEAD
     @nextcord.slash_command(guild_ids= [testServerID], description = 'Get information about user')
     async def info(self, interaction: Interaction, discordtag: Optional[int] = SlashOption(required=False)):  #uses playerInfo
         if discordtag:
@@ -121,18 +120,6 @@ class AccountCommands(commands.Cog):
             player = arr[0]
         if not player:
             await interaction.response.send_message('Player not registered', ephemeral = True)
-=======
-                    
-                    
-
-    @nextcord.slash_command(guild_ids= [testServerID], description = 'Get information about user')
-    async def info(self, interaction: Interaction):  #uses playerInfo
-        arr = self.getPlayer(interaction)
-        player = arr[0]
-        id = arr[1]
-        if not player:
-            await interaction.response.send_message('You are not registered', ephemeral = True)
->>>>>>> origin/main
         else:
               # function creates an array that stores formated string of player equipment to be displayed in nextcord.embed
             def playerInfo(player):
@@ -176,21 +163,11 @@ class AccountCommands(commands.Cog):
             async def yesButton_callback(interaction):
                 nonlocal confirm
                 if confirm == False:
-<<<<<<< HEAD
                     await interaction.response.edit_message(content = 'Are you sure you want to delete ' + player.Name + '?')
                     confirm = True
                     return
                 sqlCommands.delete(id, database = 'player')
                 await interaction.response.edit_message(content ='User ' + player.Name + ' was deleted', view = View())
-=======
-                    await interaction.response.edit_message(content = 'Are you sure you want to delete ' + player.Name + '?', delete_after = 20)
-                    confirm = True
-                    return
-                sqlCommands.delete(id, database = 'player')
-                if id in comCommands.deathtime:
-                    comCommands.deathtime.remove(id)
-                await interaction.response.edit_message(content ='User ' + player.Name + ' was deleted', delete_after = 20)
->>>>>>> origin/main
 
             async def noButton_callback(interaction):
                 await interaction.response.edit_message(content = 'Deletetion Cancelled', delete_after = 20)
@@ -622,7 +599,6 @@ class AccountCommands(commands.Cog):
             await interaction.response.send_message(embed=createEmbed(),
                                          view=myview,
                                          delete_after=120, ephemeral = True)
-<<<<<<< HEAD
 
     
     @nextcord.slash_command(guild_ids= [testServerID], description = 'Lootboxes')
@@ -675,8 +651,6 @@ class AccountCommands(commands.Cog):
                 nextcord.SelectOption(label='5'),
                 nextcord.SelectOption(label='10')
             ]
-=======
->>>>>>> origin/main
 
             async def dropdown_callback(interaction):
                 nonlocal item
