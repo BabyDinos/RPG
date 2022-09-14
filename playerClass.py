@@ -147,7 +147,6 @@ def addItem(player, nameOfItem, amounts):
             player.inventory.loc[index] = df.loc[name]
             player.inventory.loc[index,'Name'] = name
             player.inventory.loc[index,'Amount'] = amount
-
     return player.inventory
 
 def subtractItem(player, nameOfItem, amounts):
@@ -160,3 +159,22 @@ def subtractItem(player, nameOfItem, amounts):
                 player.inventory = player.inventory.drop(index)
     return player.inventory
 
+
+def updateItem(player, nameOfItem, amounts):
+    df = pd.read_excel('items.xlsx', index_col = [0], converters={'Name':str, 'Description': str, 'Stats': str, 'Amount': int, 'Type': str})
+    df['Stats'] = df.apply(lambda x: toList(x['Stats']), axis = 1)
+
+    for name, amount in zip(nameOfItem, amounts):
+        if name in player.inventory.loc[:,'Name'].tolist():
+            index = player.inventory.index[player.inventory['Name'] == name].tolist()
+            newVal = int(player.inventory.loc[index,'Amount']) + amount
+            player.inventory.loc[index, 'Amount'] = newVal
+            if newVal == 0:
+                player.inventory = player.inventory.drop(index)
+        else:
+            index = len(player.inventory.index)
+            player.inventory.loc[index] = df.loc[name]
+            player.inventory.loc[index,'Name'] = name
+            player.inventory.loc[index,'Amount'] = amount
+          
+        return player.inventory

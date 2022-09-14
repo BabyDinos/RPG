@@ -611,12 +611,21 @@ class AccountCommands(commands.Cog):
         else:
             transaction_dictionary = {}
             items_needed = ['Stone','Hide','Bark','Golden Apple','Panther Tooth','Gem']
-            index_list = player.inventory.index[player.inventory['Name'] == items_needed]
-            for name, amount in zip(items_needed, player.inventory.loc[index_list,'Amount']):
+            amount_list = []
+            for items in items_needed:
+                if items in player.inventory.loc[:,'Name'].tolist():
+                    index = player.inventory.index[player.inventory['Name'] == items]
+                    value = player.inventory.loc[index, 'Amount']
+                    amount_list.append(value)
+                else:
+                    amount_list.append(0)
+          
+            for name, amount in zip(items_needed, amount_list):
                 transaction_dictionary[name] = amount
+              
+            original_transaction_dictionary = transaction_dictionary.copy()
 
-
-            
+          
             costs_dictionary = {
                 'Common Lootbox': {
                     'Stone': 5,
@@ -629,6 +638,8 @@ class AccountCommands(commands.Cog):
                     'Gem': 5
                 }
             }
+            common_lootbox_amount = 0
+            premium_lootbox_amount = 0
             item = ''
             amount = 0
 
@@ -636,7 +647,9 @@ class AccountCommands(commands.Cog):
                 embed = nextcord.Embed(title='Lootbox Exchange',
                                        description='Exchange items for lootboxes')
                 for x, y in transaction_dictionary.items():
-                    embed.add_field(name=x, value=y)
+                    embed.add_field(name=x, value=y, inline = False)
+                embed.add_field(name = 'Common Lootbox', value = common_lootbox_amount, inline = False)
+                embed.add_field(name = 'Premium Lootbox', value = premium_lootbox_amount, inline = False)
                 return embed
 
             selectoptions = [
@@ -670,30 +683,61 @@ class AccountCommands(commands.Cog):
                 
 
             async def increaseAmount_callback(interaction):
-                if item not in transaction_dictionary:
-                    transaction_dictionary[item] = amount
-                else:
-                    transaction_dictionary[item] += amount
+                for resource, cost in costs_dictionary[item].items():
+                    transaction_dictionary[resource] -= cost * amount
+                if item == 'Common Lootbox':
+                    common_lootbox_amount += amount
+                elif item == 'Premium Lootbox':
+                    premium_lootbox_amount += amount
                 await interaction.response.edit_message(embed=createEmbed(), view=myview)
                 
 
             async def decreaseAmount_callback(interaction):
-                if item not in transaction_dictionary:
-                    transaction_dictionary[item] = -amount
-                else:
-                    transaction_dictionary[item] -= amount
+                for resource, cost in costs_dictionary[item].items():
+                    transaction_dictionary[resource] += cost * amount
+                if item == 'Common Lootbox':
+                    common_lootbox_amount -= amount
+                elif item == 'Premium Lootbox':
+                    premium_lootbox_amount -= amount
                 await interaction.response.edit_message(embed=createEmbed(), view=myview)
                 
 
             async def confirmButton_callback(interaction):
-                if len(transaction_dictionary) < 0 or all(value == 0 for value in transaction_dictionary.values()):
-                    embed = nextcord.Embed(title = 'Nothing Exchanged')
+                if all(value < 0 for value in transaction_dictionary.values()):
+                    embed = nextcord.Embed(title = 'Transaction Failed')
                     await interaction.response.edit_message(embed = embed, view = View())
                     return
-                gold_index = player.inventory.index[(
-                    player.inventory['Name'] == 'Gold')][0]
-                gold = player.inventory.loc[gold_index, 'Amount']
-                original_gold = gold
+                else:
+                    items_list, amount_list = [], []
+                    for item, original_value, value in zip(original_transaction_dictionary.keys(), original_transaction_dictionary.values(), transaction_dictionary.values()):
+                        items_list.append(item)
+                        amount_list.append(-(original_value - value))
+                    updateItem(player, items_list, amount_list)
+
+            dropdown = Select(placeholder='Choose Lootbox', options=selectoptions)
+            dropdown.callback = dropdown_callback
+            amountdropdown = Select(placeholder='Choose Amount',
+                                    options=amountselectoptions)
+            amountdropdown.callback = amountdropdown_callback
+            increaseAmount = Button(label='Increase',
+                                    style=nextcord.ButtonStyle.green)
+            increaseAmount.callback = increaseAmount_callback
+            decreaseAmount = Button(label='Decrease',
+                                    style=nextcord.ButtonStyle.red)
+            decreaseAmount.callback = decreaseAmount_callback
+            confirmButton = Button(label='Confirm Order',
+                                   style=nextcord.ButtonStyle.blurple)
+            confirmButton.callback = confirmButton_callback
+            myview = View(timeout=120)
+            myview.add_item(dropdown)
+            myview.add_item(amountdropdown)
+            myview.add_item(increaseAmount)
+            myview.add_item(decreaseAmount)
+            myview.add_item(confirmButton)
+
+            await interaction.response.send_message(embed=createEmbed(),
+                                         view=myview,
+                                         delete_after=120, ephemeral = True)
           
 def setup(bot):
     bot.add_cog(AccountCommands(bot))
