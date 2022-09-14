@@ -296,16 +296,16 @@ class comCommands(commands.Cog):
                 if id in self.adventuretime:
                     del self.adventuretime[id]
     @nextcord.slash_command(guild_ids = [testServerID], description = 'Equip armor, weapon, or pet')
-    async def equip(self, interaction:Interaction):
+    async def equip(self, interaction:Interaction, equipment:str):
         arr = self.getPlayer(interaction)
         player = arr[0]
         id = arr[1]
         if not player:
             await interaction.response.send_message('You are not registered', ephemeral = True)
         else:
-            if player.equip(equipment_message.content):
+            if player.equip(equipment):
                 await interaction.response.send_message('Equipment changed to: ' +
-                               equipment_message.content, ephemeral = True)
+                               equipment, ephemeral = True)
             else:
                 await interaction.response.send_message('Equipment not found', ephemeral = True)
             sqlCommands.save(id, player, database='player')

@@ -354,6 +354,7 @@ class AccountCommands(commands.Cog):
                 
 
             async def addButton_callback(interaction):
+                nonlocal amount
                 if player.statpoints >= amount > 0:
                     player.stats_dictionary[stat] += amount
                     player.statpoints -= amount
@@ -616,7 +617,7 @@ class AccountCommands(commands.Cog):
             for items in items_needed:
                 if items in player.inventory.loc[:,'Name'].tolist():
                     index = player.inventory.index[player.inventory['Name'] == items]
-                    value = int(player.inventory.loc[index, 'Amount'].tolist())
+                    value = player.inventory.loc[index, 'Amount'][0]
                     amount_list.append(value)
                 else:
                     amount_list.append(0)
@@ -683,6 +684,7 @@ class AccountCommands(commands.Cog):
                 
 
             async def increaseAmount_callback(interaction):
+                nonlocal common_lootbox_amount, premium_lootbox_amount
                 for resource, cost in costs_dictionary[item].items():
                     transaction_dictionary[resource] -= cost * amount
                 if item == 'Common Lootbox':
@@ -693,6 +695,7 @@ class AccountCommands(commands.Cog):
                 
 
             async def decreaseAmount_callback(interaction):
+                nonlocal common_lootbox_amount, premium_lootbox_amount
                 for resource, cost in costs_dictionary[item].items():
                     transaction_dictionary[resource] += cost * amount
                 if item == 'Common Lootbox':
@@ -703,7 +706,7 @@ class AccountCommands(commands.Cog):
                 
 
             async def confirmButton_callback(interaction):
-                if all(value < 0 for value in transaction_dictionary.values()):
+                if any(value < 0 for value in transaction_dictionary.values()) or common_lootbox_amount < 0 or premium_lootbox_amount < 0:
                     embed = nextcord.Embed(title = 'Transaction Failed')
                     await interaction.response.edit_message(embed = embed, view = View())
                     return
