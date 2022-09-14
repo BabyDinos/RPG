@@ -615,7 +615,7 @@ class AccountCommands(commands.Cog):
             for items in items_needed:
                 if items in player.inventory.loc[:,'Name'].tolist():
                     index = player.inventory.index[player.inventory['Name'] == items]
-                    value = player.inventory.loc[index, 'Amount']
+                    value = int(player.inventory.loc[index, 'Amount'].tolist())
                     amount_list.append(value)
                 else:
                     amount_list.append(0)
@@ -647,7 +647,7 @@ class AccountCommands(commands.Cog):
                 embed = nextcord.Embed(title='Lootbox Exchange',
                                        description='Exchange items for lootboxes')
                 for x, y in transaction_dictionary.items():
-                    embed.add_field(name=x, value=y, inline = False)
+                    embed.add_field(name=x, value='Total: ' + str(y), inline = False)
                 embed.add_field(name = 'Common Lootbox', value = common_lootbox_amount, inline = False)
                 embed.add_field(name = 'Premium Lootbox', value = premium_lootbox_amount, inline = False)
                 return embed
