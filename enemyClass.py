@@ -6,9 +6,12 @@ import numpy as np
 class Enemy:
     def __init__(self, name, player):
         self.Name = name
-        self.stats_dictionary = {'Max Health':random.randint(2*player.Level,5*player.Level),'Attack':random.randint(1*player.Level,4*player.Level),
-                            'Magic Attack':random.randint(2*player.Level,3*player.Level),'Defense':random.randint(1*player.Level,4*player.Level),
-                            'Magic Defense':random.randint(2*player.Level,3*player.Level),'Attack Speed':random.randint(1*player.Level,2*player.Level)}
+        self.stats_dictionary = {'Max Health':random.randint(2*player.Level,5*player.Level),
+                                'Attack':random.randint(1*player.Level,4*player.Level),
+                                'Magic Attack':random.randint(2*player.Level,3*player.Level),
+                                'Defense':random.randint(1*player.Level,4*player.Level),
+                                'Magic Defense':random.randint(2*player.Level,3*player.Level),
+                                'Attack Speed':random.randint(1*player.Level,2*player.Level)}
         self.CurrentHealth = self.stats_dictionary['Max Health']
         self.ListOfDrops = []
         self.ListOfDropWeights = []
@@ -44,6 +47,8 @@ class Enemy:
 
     def xpDrop(self):
         return self.DropNumber * 3
+
+    
 
 class Golem(Enemy):
     def __init__(self, name, player, bonuses = [2,0,0,2,2,0]):

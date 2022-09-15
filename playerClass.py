@@ -2,7 +2,6 @@ import random
 import pandas as pd
 import math
 
-
 def toList(string):
     if string != 'None':
         string = string.split('-')
@@ -12,15 +11,15 @@ class Player:
     def __init__(self, name):
         self.Name = name
         self.Level = 1
-        self.CurrentLevel = 0
-        self.MaxLevel = 10
-        self.stats_dictionary = {'Max Health' : 10, 'Attack':5,'Magic Attack':5,'Defense':5,'Magic Defense': 5, 'Attack Speed':1}
-        self.inventory = pd.DataFrame(columns= ['Name','Description','Stats', 'Amount', 'Type'], dtype=object)
-        self.equipment = pd.DataFrame(data = 'None', columns= ['Name','Stats','Type'],index = ['Weapon','Armor','Pet'], dtype=object) 
-        self.CurrentHealth = self.stats_dictionary['Max Health']
-        self.inventory = addItem(self, ['Gold'],[100])
+        self.CurrentEXP = 0
+        self.MaxEXP = 10
         self.statpoints = 10
         self.totalstatpoints = 10
+        self.stats_dictionary = {'Max Health' : 10, 'Attack':5,'Magic Attack':5,'Defense':5,'Magic Defense': 5, 'Attack Speed':1}
+        self.CurrentHealth = self.stats_dictionary['Max Health']
+        self.inventory = pd.DataFrame(columns= ['Name','Description','Stats', 'Amount', 'Type'], dtype=object)
+        self.equipment = pd.DataFrame(data = 'None', columns= ['Name','Stats','Type'],index = ['Weapon','Armor','Pet'], dtype=object) 
+        self.inventory = Player.addItem(self, ['Gold'],[100])
 
     def equip(self, equipmentName):
         if equipmentName in self.inventory.loc[:,'Name'].values:
@@ -30,6 +29,8 @@ class Player:
                 self.equipment.loc['Weapon'] = [equipmentName, self.inventory.loc[index, 'Stats'], type]
             elif type == 'Defense' or type == 'Magic Defense':
                 self.equipment.loc['Armor'] = [equipmentName, self.inventory.loc[index, 'Stats'], type]
+            elif type == 'Pet:Attack' or type == 'Pet:Defense' or type == 'Pet:PowerUp' or type == 'Pet:Special':
+                self.equipment.loc['Pet'] = [equipmentName, self.inventory.loc[index, 'Stats'], type]
             else:
                 return False
             return True
@@ -74,9 +75,9 @@ class Player:
         return self.stats_dictionary['Attack'], self.stats_dictionary['Magic Attack'], self.stats_dictionary['Attack Speed']
 
     def levelUp(self):
-        while self.CurrentLevel >= self.MaxLevel:
-            self.CurrentLevel  = self.CurrentLevel - self.MaxLevel
-            self.MaxLevel = int(self.MaxLevel * 2)
+        while self.CurrentEXP >= self.MaxEXP:
+            self.CurrentEXP  = self.CurrentEXP - self.MaxEXP
+            self.MaxEXP = int(self.MaxEXP * 2)
             self.Level += 1
             self.statpoints += 10
             self.totalstatpoints += 10
@@ -149,7 +150,7 @@ class Player:
 class Warrior(Player):
     def __init__(self, name):
         Player.__init__(self, name)
-        self.inventory = addItem(self, ['Wooden Sword','Cloth Armor'], [1,1])
+        self.inventory = Player.addItem(self, ['Wooden Sword','Cloth Armor'], [1,1])
         self.equip('Wooden Sword')
         self.equip('Cloth Armor')
         self.role = 'Warrior'
@@ -165,7 +166,7 @@ class Warrior(Player):
 class Mage(Player):
     def __init__(self, name):
         Player.__init__(self, name)
-        self.inventory = addItem(self, ['Wooden Staff','Cloth Robe'],[1,1])
+        self.inventory = Player.addItem(self, ['Wooden Staff','Cloth Robe'],[1,1])
         self.equip('Wooden Staff')
         self.equip('Cloth Robe')
         self.role = 'Mage'

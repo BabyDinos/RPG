@@ -1,8 +1,8 @@
 from nextcord.ext import commands
 import asyncio
 from sqliteCommands import sqlCommands
-from enemyClass 
-from playerClass 
+import enemyClass 
+import playerClass 
 import nextcord
 from nextcord.ui import Button, View, Select
 import os
@@ -60,7 +60,7 @@ class AccountCommands(commands.Cog):
                                             name='Warrior')
                 await interaction.user.add_roles(role)
                 sqlCommands.save(id,
-                                    Warrior(
+                                    playerClass.Warrior(
                                         username),
                                     database='player')
                 embed = nextcord.Embed(
@@ -78,7 +78,7 @@ class AccountCommands(commands.Cog):
                                             name='Mage')
                 await interaction.user.add_roles(role)
                 sqlCommands.save(id,
-                                    Mage(username),
+                                    playerClass.Mage(username),
                                     database='player')
                 embed = nextcord.Embed(
                     title='Thanks for Registering ' +
@@ -127,8 +127,8 @@ class AccountCommands(commands.Cog):
             def playerInfo(player):
                 # arr first string will be Stats, next will be equipment, and last will be inventory
                 arr = []
-                string = 'XP: ' + str(player.CurrentLevel) + '/' + str(
-                    player.MaxLevel) + '\n'
+                string = 'XP: ' + str(player.CurrentEXP) + '/' + str(
+                    player.MaxEXP) + '\n'
                 for x, y in player.stats_dictionary.items():
                     if x == 'Max Health':
                         string += 'Health: ' + str(
@@ -187,7 +187,6 @@ class AccountCommands(commands.Cog):
 
             await interaction.response.send_message('Do you want to delete ' + player.Name + '?', view = myview, ephemeral = True, delete_after = 20)
             
-
     @nextcord.slash_command(guild_ids= [testServerID], description = 'Get inventory of user')
     async def inventory(self, interaction: Interaction):  #uses playerInventory
         arr = self.getPlayer(interaction)
@@ -434,7 +433,6 @@ class AccountCommands(commands.Cog):
                                          view=myview,
                                          delete_after=120, ephemeral = True)
 
-
     @nextcord.slash_command(guild_ids= [testServerID], description = 'Open shop to buy and sell items. Prices are in gold, listed in the dropdown menus')
     async def shop(self, interaction:Interaction):
         arr = self.getPlayer(interaction)
@@ -568,10 +566,10 @@ class AccountCommands(commands.Cog):
                     sell_string = '\u200b'
                     for action_dict in order_list:
                         if 'Buy' in action_dict.keys():
-                            player.inventory = Player.addItem(player, [action_dict['Buy'][0]],[action_dict['Buy'][1]])
+                            player.inventory = playerClass.Player.addItem(player, [action_dict['Buy'][0]],[action_dict['Buy'][1]])
                             buy_string += action_dict['Buy'][0] + ': ' + str(action_dict['Buy'][1]) + '\n'
                         elif 'Sell' in action_dict.keys():
-                            player.inventory = Player.subtractItem(player, [action_dict['Sell'][0]],[abs(action_dict['Sell'][1])])
+                            player.inventory = playerClass.Player.subtractItem(player, [action_dict['Sell'][0]],[abs(action_dict['Sell'][1])])
                             sell_string += action_dict['Sell'][0] + ': ' + str(abs(action_dict['Sell'][1])) + '\n'
                     player.inventory.loc[gold_index, 'Amount'] = gold
                     embed.add_field(name = 'BOUGHT', value = buy_string, inline = True)
@@ -724,8 +722,8 @@ class AccountCommands(commands.Cog):
                     for item, original_value, value in zip(original_transaction_dictionary.keys(), original_transaction_dictionary.values(), transaction_dictionary.values()):
                         items_list.append(item)
                         amount_list.append(-(original_value - value))
-                    player.inventory = Player.updateItem(player, items_list, amount_list)
-                    player.inventory = Player.updateItem(player, ['Common Loot Box','Premium Loot Box'],[common_lootbox_amount, premium_lootbox_amount])
+                    player.inventory = playerClass.Player.updateItem(player, items_list, amount_list)
+                    player.inventory = playerClass.Player.updateItem(player, ['Common Loot Box','Premium Loot Box'],[common_lootbox_amount, premium_lootbox_amount])
                     sqlCommands.save(id, player, database = 'player')
                     embed = nextcord.Embed(title = 'Purchase Confirmed', description = 'You got ' + str(common_lootbox_amount) + ' Common Loot Boxes and ' + str(premium_lootbox_amount) + ' Premium Loot Boxes!')
                     await interaction.response.edit_message(embed = embed, view = View())
@@ -810,9 +808,9 @@ class AccountCommands(commands.Cog):
                     text = 'Not enough ' + item + 'es'
                     await interaction.response.edit_message(embed = createEmbed(name = text), view = myview)
                 else:
-                    player.inventory = Player.updateItem(player, [item], [-amount])
+                    player.inventory = playerClass.Player.updateItem(player, [item], [-amount])
                     lootbox_rewards = lootbox.CommonLootbox().open(amount)
-                    player.inventory = Player.updateItem(player, lootbox_rewards[0], lootbox_rewards[1])
+                    player.inventory = playerClass.Player.updateItem(player, lootbox_rewards[0], lootbox_rewards[1])
                     sqlCommands.save(id, player, database = 'player')
                     text = ''
                     for name, freq in zip(lootbox_rewards[0], lootbox_rewards[1]):
