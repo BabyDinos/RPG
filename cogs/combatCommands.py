@@ -1,8 +1,8 @@
 from nextcord.ext import commands
 import asyncio
 from sqliteCommands import sqlCommands
-from enemyClass import *
-from playerClass import *
+from enemyClass
+from playerClass
 import nextcord
 from nextcord import Interaction
 import time
@@ -261,7 +261,7 @@ class comCommands(commands.Cog):
                 enemy_drops = enemy.mobDrop(enemy.ListOfDrops,
                                             enemy.ListOfDropWeights,
                                             dropnumber=enemy.DropNumber)
-                player.inventory = addItem(player, enemy_drops[0],
+                player.inventory = Player.addItem(player, enemy_drops[0],
                                            enemy_drops[1])
                 player.CurrentHealth = player.stats_dictionary[
                     'Current Health']

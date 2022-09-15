@@ -96,6 +96,55 @@ class Player:
             return True
         else:
             return False
+    @staticmethod 
+    def addItem(player, nameOfItem, amounts):
+        #nameOfItem is a list of names of items
+        #amounts is a list of same length as nameOfItems
+        df = pd.read_excel('items.xlsx', index_col = [0], converters={'Name':str, 'Description': str, 'Stats': str, 'Amount': int, 'Type': str})
+        df['Stats'] = df.apply(lambda x: toList(x['Stats']), axis = 1)
+    
+        for name, amount in zip(nameOfItem, amounts):
+            if name in player.inventory.loc[:,'Name'].tolist():
+                index = player.inventory.index[player.inventory['Name'] == name].tolist()
+                newVal = int(player.inventory.loc[index,'Amount']) + amount
+                player.inventory.loc[index, 'Amount'] = newVal
+            else:
+                index = len(player.inventory.index)
+                player.inventory.loc[index] = df.loc[name]
+                player.inventory.loc[index,'Name'] = name
+                player.inventory.loc[index,'Amount'] = amount
+        return player.inventory
+      
+    @staticmethod 
+    def subtractItem(player, nameOfItem, amounts):
+        for name, amount in zip(nameOfItem, amounts):
+            if name in player.inventory.loc[:,'Name'].tolist():
+                index = player.inventory.index[player.inventory['Name'] == name].tolist()
+                newVal = int(player.inventory.loc[index,'Amount']) - amount
+                player.inventory.loc[index, 'Amount'] = newVal
+                if newVal == 0:
+                    player.inventory = player.inventory.drop(index)
+        return player.inventory
+    
+    @staticmethod 
+    def updateItem(player, nameOfItem, amounts):
+        df = pd.read_excel('items.xlsx', index_col = [0], converters={'Name':str, 'Description': str, 'Stats': str, 'Amount': int, 'Type': str})
+        df['Stats'] = df.apply(lambda x: toList(x['Stats']), axis = 1)
+    
+        for name, amount in zip(nameOfItem, amounts):
+            if name in player.inventory.loc[:,'Name'].tolist():
+                index = player.inventory.index[player.inventory['Name'] == name].tolist()
+                newVal = int(player.inventory.loc[index,'Amount']) + amount
+                player.inventory.loc[index, 'Amount'] = newVal
+                if newVal == 0:
+                    player.inventory = player.inventory.drop(index)
+            else:
+                index = len(player.inventory.index)
+                player.inventory.loc[index] = df.loc[name]
+                player.inventory.loc[index,'Name'] = name
+                player.inventory.loc[index,'Amount'] = amount
+              
+            return player.inventory
 
 class Warrior(Player):
     def __init__(self, name):
@@ -131,50 +180,3 @@ class Mage(Player):
         return matk + self.Level 
 
 # function for administrators to add items from an excel file into inventories. Will be used to add drops to players inventories
-def addItem(player, nameOfItem, amounts):
-    #nameOfItem is a list of names of items
-    #amounts is a list of same length as nameOfItems
-    df = pd.read_excel('items.xlsx', index_col = [0], converters={'Name':str, 'Description': str, 'Stats': str, 'Amount': int, 'Type': str})
-    df['Stats'] = df.apply(lambda x: toList(x['Stats']), axis = 1)
-
-    for name, amount in zip(nameOfItem, amounts):
-        if name in player.inventory.loc[:,'Name'].tolist():
-            index = player.inventory.index[player.inventory['Name'] == name].tolist()
-            newVal = int(player.inventory.loc[index,'Amount']) + amount
-            player.inventory.loc[index, 'Amount'] = newVal
-        else:
-            index = len(player.inventory.index)
-            player.inventory.loc[index] = df.loc[name]
-            player.inventory.loc[index,'Name'] = name
-            player.inventory.loc[index,'Amount'] = amount
-    return player.inventory
-
-def subtractItem(player, nameOfItem, amounts):
-    for name, amount in zip(nameOfItem, amounts):
-        if name in player.inventory.loc[:,'Name'].tolist():
-            index = player.inventory.index[player.inventory['Name'] == name].tolist()
-            newVal = int(player.inventory.loc[index,'Amount']) - amount
-            player.inventory.loc[index, 'Amount'] = newVal
-            if newVal == 0:
-                player.inventory = player.inventory.drop(index)
-    return player.inventory
-
-
-def updateItem(player, nameOfItem, amounts):
-    df = pd.read_excel('items.xlsx', index_col = [0], converters={'Name':str, 'Description': str, 'Stats': str, 'Amount': int, 'Type': str})
-    df['Stats'] = df.apply(lambda x: toList(x['Stats']), axis = 1)
-
-    for name, amount in zip(nameOfItem, amounts):
-        if name in player.inventory.loc[:,'Name'].tolist():
-            index = player.inventory.index[player.inventory['Name'] == name].tolist()
-            newVal = int(player.inventory.loc[index,'Amount']) + amount
-            player.inventory.loc[index, 'Amount'] = newVal
-            if newVal == 0:
-                player.inventory = player.inventory.drop(index)
-        else:
-            index = len(player.inventory.index)
-            player.inventory.loc[index] = df.loc[name]
-            player.inventory.loc[index,'Name'] = name
-            player.inventory.loc[index,'Amount'] = amount
-          
-        return player.inventory

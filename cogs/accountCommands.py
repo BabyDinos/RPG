@@ -1,8 +1,8 @@
 from nextcord.ext import commands
 import asyncio
 from sqliteCommands import sqlCommands
-from enemyClass import *
-from playerClass import *
+from enemyClass 
+from playerClass 
 import nextcord
 from nextcord.ui import Button, View, Select
 import os
@@ -568,10 +568,10 @@ class AccountCommands(commands.Cog):
                     sell_string = '\u200b'
                     for action_dict in order_list:
                         if 'Buy' in action_dict.keys():
-                            player.inventory = addItem(player, [action_dict['Buy'][0]],[action_dict['Buy'][1]])
+                            player.inventory = Player.addItem(player, [action_dict['Buy'][0]],[action_dict['Buy'][1]])
                             buy_string += action_dict['Buy'][0] + ': ' + str(action_dict['Buy'][1]) + '\n'
                         elif 'Sell' in action_dict.keys():
-                            player.inventory = subtractItem(player, [action_dict['Sell'][0]],[abs(action_dict['Sell'][1])])
+                            player.inventory = Player.subtractItem(player, [action_dict['Sell'][0]],[abs(action_dict['Sell'][1])])
                             sell_string += action_dict['Sell'][0] + ': ' + str(abs(action_dict['Sell'][1])) + '\n'
                     player.inventory.loc[gold_index, 'Amount'] = gold
                     embed.add_field(name = 'BOUGHT', value = buy_string, inline = True)
@@ -724,8 +724,8 @@ class AccountCommands(commands.Cog):
                     for item, original_value, value in zip(original_transaction_dictionary.keys(), original_transaction_dictionary.values(), transaction_dictionary.values()):
                         items_list.append(item)
                         amount_list.append(-(original_value - value))
-                    player.inventory = updateItem(player, items_list, amount_list)
-                    player.inventory = updateItem(player, ['Common Loot Box','Premium Loot Box'],[common_lootbox_amount, premium_lootbox_amount])
+                    player.inventory = Player.updateItem(player, items_list, amount_list)
+                    player.inventory = Player.updateItem(player, ['Common Loot Box','Premium Loot Box'],[common_lootbox_amount, premium_lootbox_amount])
                     sqlCommands.save(id, player, database = 'player')
                     embed = nextcord.Embed(title = 'Purchase Confirmed', description = 'You got ' + str(common_lootbox_amount) + ' Common Loot Boxes and ' + str(premium_lootbox_amount) + ' Premium Loot Boxes!')
                     await interaction.response.edit_message(embed = embed, view = View())
@@ -810,9 +810,9 @@ class AccountCommands(commands.Cog):
                     text = 'Not enough ' + item + 'es'
                     await interaction.response.edit_message(embed = createEmbed(name = text), view = myview)
                 else:
-                    player.inventory = updateItem(player, [item], [-amount])
+                    player.inventory = Player.updateItem(player, [item], [-amount])
                     lootbox_rewards = lootbox.CommonLootbox().open(amount)
-                    player.inventory = updateItem(player, lootbox_rewards[0], lootbox_rewards[1])
+                    player.inventory = Player.updateItem(player, lootbox_rewards[0], lootbox_rewards[1])
                     sqlCommands.save(id, player, database = 'player')
                     text = ''
                     for name, freq in zip(lootbox_rewards[0], lootbox_rewards[1]):
