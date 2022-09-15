@@ -47,6 +47,13 @@ class Player:
           return 'Enemy Goes'
 
     def attack(self):
+        if self.equipment.loc['Pet','Type'] == 'Pet:Attack':
+            petattackstat = random.randint(self.equipment.loc['Pet','Stats'][0], self.equipment.loc['Pet','Stats'][1])
+            petmagicattackstat = 0
+        elif self.equipment.loc['Pet','Type'] == 'Pet:Magic Attack':
+            petattackstat = 0
+            petmagicattackstat = random.randint(self.equipment.loc['Pet','Stats'][0], self.equipment.loc['Pet','Stats'][1])
+
         lower_bound = int(self.equipment.loc['Weapon','Stats'][0])
         upper_bound = int(self.equipment.loc['Weapon','Stats'][1])
         if self.equipment.loc['Weapon','Type'] == 'Attack':
@@ -55,9 +62,16 @@ class Player:
         else:
             currentattack = random.randint(0, self.stats_dictionary['Attack'])
             currentmagicattack = random.randint(lower_bound+self.stats_dictionary['Magic Attack'], self.stats_dictionary['Magic Attack'] + upper_bound)
-        return {'Attack' : currentattack, 'Magic Attack': currentmagicattack} 
+        return {'Attack' : currentattack + petattackstat + petmagicattackstat, 'Magic Attack': currentmagicattack + petattackstat + petmagicattackstat} 
 
     def defend(self):
+        if self.equipment.loc['Pet','Type'] == 'Pet:Defense':
+            petdefensestat = random.randint(self.equipment.loc['Pet','Stats'][0], self.equipment.loc['Pet','Stats'][1])
+            petmagicdefensestat = 0
+        elif self.equipment.loc['Pet','Type'] == 'Pet:Magic Defense':
+            petdefensestat = 0
+            petmagicdefensestat = random.randint(self.equipment.loc['Pet','Stats'][0], self.equipment.loc['Pet','Stats'][1])
+
         lower_bound = int(self.equipment.loc['Armor','Stats'][0])
         upper_bound = int(self.equipment.loc['Armor','Stats'][1])
         if self.equipment.loc['Armor','Type'] == 'Defense':
@@ -66,12 +80,17 @@ class Player:
         else:
             currentdefense = random.randint(0, self.stats_dictionary['Defense'])
             currentmagicdefense = random.randint(lower_bound+self.stats_dictionary['Magic Defense'], self.stats_dictionary['Magic Defense'] + upper_bound)
-        return {'Defense': currentdefense, 'Magic Defense': currentmagicdefense}
+        return {'Defense': currentdefense + petdefensestat + petmagicdefensestat, 'Magic Defense': currentmagicdefense + petdefensestat + petmagicdefensestat}
 
     def powerUp(self):
         self.stats_dictionary['Attack'] = int(math.ceil(self.stats_dictionary['Attack'] * 1.5))
         self.stats_dictionary['Magic Attack'] = int(math.ceil(self.stats_dictionary['Magic Attack'] * 1.5))
         self.stats_dictionary['Attack Speed'] = int(math.ceil(self.stats_dictionary['Attack Speed'] * 1.5))
+        if self.equipment.loc['Pet','Type'] == 'Pet:PowerUp': 
+            increase = random.randint(self.equipment.loc['Pet','Stats'][0], self.equipment.loc['Pet','Stats'][1])
+            self.stats_dictionary['Attack'] += increase
+            self.stats_dictionary['Magic Attack'] += increase
+            self.stats_dictionary['Attack Speed'] += increase
         return self.stats_dictionary['Attack'], self.stats_dictionary['Magic Attack'], self.stats_dictionary['Attack Speed']
 
     def levelUp(self):
@@ -179,5 +198,3 @@ class Mage(Player):
         else:
             matk = math.floor(self.stats_dictionary['Magic Attack'] / 10)
         return matk + self.Level 
-
-# function for administrators to add items from an excel file into inventories. Will be used to add drops to players inventories

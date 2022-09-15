@@ -98,7 +98,6 @@ class AccountCommands(commands.Cog):
 
             await interaction.response.send_message(embed=embed, ephemeral = True, view = myview)
 
-          
     @nextcord.slash_command(guild_ids= [testServerID], description = 'Change name of user')
     async def namechange(self, interaction: Interaction, username:str):
         arr = self.getPlayer(interaction)
@@ -114,7 +113,7 @@ class AccountCommands(commands.Cog):
             await interaction.response.send_message('Username has been changed from ' + temp + ' to ' + username, delete_after=20, ephemeral = True)
             
     @nextcord.slash_command(guild_ids= [testServerID], description = 'Get information about user')
-    async def info(self, interaction: Interaction, discordtag: Optional[int] = SlashOption(required=False)):  #uses playerInfo
+    async def info(self, interaction: Interaction, discordtag: Optional[int] = SlashOption(required=False)):  
         if discordtag:
             player = sqlCommands.load(discordtag, database = 'player')
         else:
@@ -188,7 +187,11 @@ class AccountCommands(commands.Cog):
             await interaction.response.send_message('Do you want to delete ' + player.Name + '?', view = myview, ephemeral = True, delete_after = 20)
             
     @nextcord.slash_command(guild_ids= [testServerID], description = 'Get inventory of user')
-    async def inventory(self, interaction: Interaction):  #uses playerInventory
+    async def inventory(self):  
+        pass
+
+    @inventory.subcommand(description = 'Detailed Inventory')
+    async def detailed(self, interaction:Interaction):
         arr = self.getPlayer(interaction)
         player = arr[0]
         id = arr[1]
@@ -279,6 +282,20 @@ class AccountCommands(commands.Cog):
             myview.add_item(fastNextButton)
             await interaction.response.send_message(embed=createEmbed(pageNum=currentPage),
                                       view=myview, ephemeral = True)
+
+    @inventory.subcommand(description = 'Full Inventory')
+    async def general(self, interaction:Interaction):
+        arr = self.getPlayer(interaction)
+        player = arr[0]
+        id = arr[1]
+        if not player:
+            await interaction.response.send_message('You are not registered', delete_after=20, ephemeral = True)
+        else:
+            embed = nextcord.Embed(title = player.Name + ' Inventory', description = '\u200b')
+            for index, row in player.inventory.iterrows():
+                embed.add_field(name = '[' + row['Name'] + ': ' + str(row['Amount']) + ']', value = '\u200b')
+
+            await interaction.response.send_message(embed = embed, ephemeral = True)
 
     @nextcord.slash_command(guild_ids= [testServerID], description = 'Adjust player stats')
     async def statpoints(self, interaction):
@@ -604,7 +621,7 @@ class AccountCommands(commands.Cog):
                                          delete_after=120, ephemeral = True)
 
     @nextcord.slash_command(guild_ids= [testServerID], description = 'Loot Boxes')
-    async def lootbox(self, interaction:Interaction):
+    async def lootbox(self):
         pass
     @lootbox.subcommand(description = 'Loot Box Exchange')
     async def exchange(self, interaction: Interaction):

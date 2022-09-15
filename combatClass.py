@@ -14,17 +14,13 @@ class Combat:
 
         # Put Current Health as first item, and so I can display info as combat progresses
         self.player_total_dictionary = player.stats_dictionary.copy()
-        self.player.stats_dictionary = {
-            'Current Health': self.player_total_dictionary['Max Health']
-        }
+        self.player.stats_dictionary = {'Current Health': self.player_total_dictionary['Max Health']}
         self.player.stats_dictionary.update(self.player_total_dictionary)
         self.player.stats_dictionary.pop('Max Health')
 
         # Put Current Health as first item, and so I can display info as combat progresses
         self.enemy_total_dictionary = enemy.stats_dictionary.copy()
-        self.enemy.stats_dictionary = {
-            'Current Health': self.enemy_total_dictionary['Max Health']
-        }
+        self.enemy.stats_dictionary = {'Current Health': self.enemy_total_dictionary['Max Health']}
         self.enemy.stats_dictionary.update(self.enemy_total_dictionary)
         self.enemy.stats_dictionary.pop('Max Health')
 
