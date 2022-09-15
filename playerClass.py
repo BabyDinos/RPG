@@ -53,6 +53,9 @@ class Player:
         elif self.equipment.loc['Pet','Type'] == 'Pet:Magic Attack':
             petattackstat = 0
             petmagicattackstat = random.randint(self.equipment.loc['Pet','Stats'][0], self.equipment.loc['Pet','Stats'][1])
+        else:
+            petattackstat = 0
+            petmagicattackstat = 0
 
         lower_bound = int(self.equipment.loc['Weapon','Stats'][0])
         upper_bound = int(self.equipment.loc['Weapon','Stats'][1])
@@ -71,6 +74,9 @@ class Player:
         elif self.equipment.loc['Pet','Type'] == 'Pet:Magic Defense':
             petdefensestat = 0
             petmagicdefensestat = random.randint(self.equipment.loc['Pet','Stats'][0], self.equipment.loc['Pet','Stats'][1])
+        else:
+            petdefensestat = 0
+            petmagicdefensestat = 0
 
         lower_bound = int(self.equipment.loc['Armor','Stats'][0])
         upper_bound = int(self.equipment.loc['Armor','Stats'][1])
