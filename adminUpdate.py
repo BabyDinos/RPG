@@ -11,5 +11,6 @@ with SqliteDict('player.sqlite') as mydict:
         else:
             vars(newplayer)[variable] = vars(player)[variable]
     print(vars(newplayer))
+    mydict['4777'] = newplayer
     mydict.commit()
 
