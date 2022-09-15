@@ -35,3 +35,4 @@ class sqlCommands:
                 mydict.commit()
         except Exception as ex:
             print("Error during deletion: ", ex)
+
