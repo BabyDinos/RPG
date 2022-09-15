@@ -8,6 +8,7 @@ from nextcord.ui import Button, View, Select
 import os
 from nextcord import Interaction, SlashOption
 from typing import Optional
+import lootbox
 
 testServerID = int(os.environ['testServerID'])
 
@@ -109,6 +110,7 @@ class AccountCommands(commands.Cog):
             temp = player.Name
             player.Name = username
             sqlCommands.save(id, player, database='player')
+            await interaction.user.edit(nick=username)
             await interaction.response.send_message('Username has been changed from ' + temp + ' to ' + username, delete_after=20, ephemeral = True)
             
     @nextcord.slash_command(guild_ids= [testServerID], description = 'Get information about user')
@@ -603,8 +605,11 @@ class AccountCommands(commands.Cog):
                                          view=myview,
                                          delete_after=120, ephemeral = True)
 
-    @nextcord.slash_command(guild_ids= [testServerID], description = 'Lootboxes')
-    async def lootbox(self, interaction: Interaction):
+    @nextcord.slash_command(guild_ids= [testServerID], description = 'Loot Boxes')
+    async def lootbox(self, interaction:Interaction):
+        pass
+    @lootbox.subcommand(description = 'Loot Box Exchange')
+    async def exchange(self, interaction: Interaction):
         arr = self.getPlayer(interaction)
         player = arr[0]
         id = arr[1]
@@ -617,7 +622,7 @@ class AccountCommands(commands.Cog):
             for items in items_needed:
                 if items in player.inventory.loc[:,'Name'].tolist():
                     index = player.inventory.index[player.inventory['Name'] == items]
-                    value = player.inventory.loc[index, 'Amount'][0]
+                    value = player.inventory.loc[index, 'Amount'].tolist()[0]
                     amount_list.append(value)
                 else:
                     amount_list.append(0)
@@ -706,16 +711,24 @@ class AccountCommands(commands.Cog):
                 
 
             async def confirmButton_callback(interaction):
-                if any(value < 0 for value in transaction_dictionary.values()) or common_lootbox_amount < 0 or premium_lootbox_amount < 0:
+                if common_lootbox_amount == 0 and premium_lootbox_amount == 0:
+                    embed = nextcord.Embed(title = 'No Purchase was Made')
+                    await interaction.response.edit_message(embed = embed, view = View())
+                elif any(value < 0 for value in transaction_dictionary.values()) or common_lootbox_amount < 0 or premium_lootbox_amount < 0:
                     embed = nextcord.Embed(title = 'Transaction Failed')
                     await interaction.response.edit_message(embed = embed, view = View())
                     return
+                
                 else:
                     items_list, amount_list = [], []
                     for item, original_value, value in zip(original_transaction_dictionary.keys(), original_transaction_dictionary.values(), transaction_dictionary.values()):
                         items_list.append(item)
                         amount_list.append(-(original_value - value))
-                    updateItem(player, items_list, amount_list)
+                    player.inventory = updateItem(player, items_list, amount_list)
+                    player.inventory = updateItem(player, ['Common Loot Box','Premium Loot Box'],[common_lootbox_amount, premium_lootbox_amount])
+                    sqlCommands.save(id, player, database = 'player')
+                    embed = nextcord.Embed(title = 'Purchase Confirmed', description = 'You got ' + str(common_lootbox_amount) + ' Common Loot Boxes and ' + str(premium_lootbox_amount) + ' Premium Loot Boxes!')
+                    await interaction.response.edit_message(embed = embed, view = View())
 
             dropdown = Select(placeholder='Choose Lootbox', options=selectoptions)
             dropdown.callback = dropdown_callback
@@ -736,6 +749,87 @@ class AccountCommands(commands.Cog):
             myview.add_item(amountdropdown)
             myview.add_item(increaseAmount)
             myview.add_item(decreaseAmount)
+            myview.add_item(confirmButton)
+
+            await interaction.response.send_message(embed=createEmbed(),
+                                         view=myview,
+                                         delete_after=120, ephemeral = True)
+
+    @lootbox.subcommand(description = 'Open Loot Box')
+    async def open(self, interaction:Interaction):
+        arr = self.getPlayer(interaction)
+        player = arr[0]
+        id = arr[1]
+        if not player:
+            await interaction.response.send_message('You are not registered', delete_after=20, ephemeral = True)
+        else:
+            item = ''
+            amount = 0
+            def createEmbed(name = '\u200b', text = '\u200b'):
+                lootbox_dictionary = {}
+                lootbox_list_index = player.inventory.index[player.inventory['Type']=='Loot Box'].tolist()
+                for lootbox_index in lootbox_list_index:
+                    name = player.inventory.loc[lootbox_index,'Name']
+                    cur_amount = player.inventory.loc[lootbox_index, 'Amount']
+                    lootbox_dictionary[name] = cur_amount
+                embed = nextcord.Embed(title='Lootbox Open')
+                for x, y in lootbox_dictionary.items():
+                    embed.add_field(name=x, value='Total: ' + str(y), inline = True)
+                embed.add_field(name= name, value = text, inline = False)
+                return embed
+
+            selectoptions = [
+                nextcord.SelectOption(label='Common Loot Box'),
+                nextcord.SelectOption(label='Premium Loot Box')
+            ]
+            amountselectoptions = [
+                nextcord.SelectOption(label='1'),
+                nextcord.SelectOption(label='5'),
+                nextcord.SelectOption(label='10')
+            ]
+            async def dropdown_callback(interaction):
+                nonlocal item
+                if dropdown.values[0] == 'Common Loot Box':
+                    item = 'Common Loot Box'
+                elif dropdown.values[0] == 'Premium Loot Box':
+                    item = 'Premium Loot Box'
+
+            async def amountdropdown_callback(interaction):
+                nonlocal amount
+                if amountdropdown.values[0] == '1':
+                    amount = 1
+                elif amountdropdown.values[0] == '5':
+                    amount = 5
+                elif amountdropdown.values[0] == '10':
+                    amount = 10
+                
+
+            async def confirmButton_callback(interaction):
+                index = player.inventory.index[player.inventory['Name'] == item].tolist()[0]
+                if index == [] or amount > player.inventory.loc[index,'Amount']:
+                    text = 'Not enough ' + item + 'es'
+                    await interaction.response.edit_message(embed = createEmbed(name = text), view = myview)
+                else:
+                    player.inventory = updateItem(player, [item], [-amount])
+                    lootbox_rewards = lootbox.CommonLootbox().open(amount)
+                    player.inventory = updateItem(player, lootbox_rewards[0], lootbox_rewards[1])
+                    sqlCommands.save(id, player, database = 'player')
+                    text = ''
+                    for name, freq in zip(lootbox_rewards[0], lootbox_rewards[1]):
+                        text += '🎊 ' + name + ': ' + str(freq) + ' 🎊\n'
+                    await interaction.response.edit_message(embed = createEmbed(text = text), view = myview)
+
+            dropdown = Select(placeholder='Choose Lootbox', options=selectoptions)
+            dropdown.callback = dropdown_callback
+            amountdropdown = Select(placeholder='Choose Amount',
+                                    options=amountselectoptions)
+            amountdropdown.callback = amountdropdown_callback
+            confirmButton = Button(label='Confirm Order',
+                                   style=nextcord.ButtonStyle.blurple)
+            confirmButton.callback = confirmButton_callback
+            myview = View(timeout=120)
+            myview.add_item(dropdown)
+            myview.add_item(amountdropdown)
             myview.add_item(confirmButton)
 
             await interaction.response.send_message(embed=createEmbed(),

@@ -32,13 +32,15 @@ class Enemy:
 
     def mobDrop(self, listofdrops, listofdropweights, dropnumber):
         decision = random.choices(listofdrops, weights = listofdropweights, k = dropnumber)
-        mobdrops = []
+        mobdrops = {}
         for decisionindex in range(len(decision)):
-            for dropindex in range(len(listofdrops)):
-                if decision[decisionindex] == listofdrops[dropindex]:
-                    mobdrops.append(listofdrops[dropindex])
+            name = decision[decisionindex]
+            if name in mobdrops.keys():
+                mobdrops[name] += 1
+            else:
+                mobdrops[name] = 1
 
-        return [Counter(mobdrops).keys(), Counter(mobdrops).values()]
+        return [mobdrops.keys(), mobdrops.values()]
 
     def xpDrop(self):
         return self.DropNumber * 3
