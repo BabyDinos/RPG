@@ -18,9 +18,12 @@ with SqliteDict('player.sqlite') as mydict:
         item_list = []
         amount_list = []
         for index, row in player.inventory.iterrows():
-            item_list.append(newplayer.inventory.loc[index,'Name'])
-            amount_list.append(newplayer.inventory.loc[index,'Amount'])
+            item_list.append(player.inventory.loc[index,'Name'])
+            amount_list.append(player.inventory.loc[index,'Amount'])
         newplayer.inventory = playerClass.Player.updateItem(newplayer, item_list, amount_list)
         mydict[key] = newplayer
     mydict.commit()
 
+with SqliteDict('player.sqlite') as mydict:
+    player = mydict['4777']
+    print(player.inventory)
