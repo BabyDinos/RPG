@@ -733,7 +733,6 @@ class AccountCommands(commands.Cog):
                     embed = nextcord.Embed(title = 'Transaction Failed')
                     await interaction.response.edit_message(embed = embed, view = View())
                     return
-                
                 else:
                     items_list, amount_list = [], []
                     for item, original_value, value in zip(original_transaction_dictionary.keys(), original_transaction_dictionary.values(), transaction_dictionary.values()):
@@ -827,7 +826,7 @@ class AccountCommands(commands.Cog):
                 else:
                     player.inventory = playerClass.Player.updateItem(player, [item], [-amount])
                     lootbox_rewards = lootbox.CommonLootbox().open(amount)
-                    player.inventory = playerClass.Player.updateItem(player, lootbox_rewards[0], lootbox_rewards[1])
+                    player.inventory = playerClass.Player.updateItem(player, lootbox_rewards[0].tolist(), lootbox_rewards[1].tolist())
                     sqlCommands.save(id, player, database = 'player')
                     text = ''
                     for name, freq in zip(lootbox_rewards[0], lootbox_rewards[1]):

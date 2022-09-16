@@ -6,8 +6,7 @@ class lootbox:
     def open(self, amount):
         item_result = random.choices(self.items, weights = self.probabilities, k = amount)
         itemdrops = {}
-        for decisionindex in range(len(item_result)):
-            name = item_result[decisionindex]
+        for name in item_result:
             if name in itemdrops.keys():
                 itemdrops[name] += 1
             else:
