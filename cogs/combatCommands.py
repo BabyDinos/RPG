@@ -47,7 +47,7 @@ class comCommands(commands.Cog):
                 ephemeral = True)
         else:
             enemy = combatClass.Combat.enemySpawn(player)
-            combat = combatClass.Combat(player, enemy)
+            combat = combatClass.Combat(player, enemy, id)
             async def attack_callback(interaction):
                 situation = combat.playerAttack()
                 await interaction.response.edit_message(embed=combat.createEmbed(situation),view=myview)
@@ -84,22 +84,21 @@ class comCommands(commands.Cog):
 
             if combat.enemy.stats_dictionary['Current Health'] <= 0:
                 summary_player = combat.playerWon()
-                sqlCommands.save(id, summary_player[1], database='player')
-                await interaction.edit_original_message(embed = summary_player[0], view = View())
+                await interaction.edit_original_message(embed = summary_player, view = View())
                 self.adventuretime[id] = time.time() + self.adventuretimer
                 await asyncio.sleep(self.adventuretimer)
                 if id in self.adventuretime:
                     del self.adventuretime[id]
-                  
+                return
             elif combat.player.stats_dictionary['Current Health'] <= 0:
                 summary_player = combat.playerLost()
-                await interaction.edit_original_message(embed = summary_player[0], view = View())
-                sqlCommands.save(id, summary_player[1], database='player')
+                await interaction.edit_original_message(embed = summary_player, view = View())
                 self.deathtime.append(id)
                 self.adventuretime[id] = time.time() + self.adventuretimer
                 await asyncio.sleep(self.adventuretimer)
                 if id in self.adventuretime:
                     del self.adventuretime[id]
+                return
 
     @nextcord.slash_command(guild_ids = [testServerID], description = 'Equip armor, weapon, or pet')
     async def equip(self, interaction:Interaction, equipment:str):

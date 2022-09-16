@@ -586,7 +586,7 @@ class AccountCommands(commands.Cog):
                             player.inventory = playerClass.Player.addItem(player, [action_dict['Buy'][0]],[action_dict['Buy'][1]])
                             buy_string += action_dict['Buy'][0] + ': ' + str(action_dict['Buy'][1]) + '\n'
                         elif 'Sell' in action_dict.keys():
-                            player.inventory = playerClass.Player.subtractItem(player, [action_dict['Sell'][0]],[abs(action_dict['Sell'][1])])
+                            player.inventory = playerClass.Player.updateItem(player, [action_dict['Sell'][0]],[abs(action_dict['Sell'][1])])
                             sell_string += action_dict['Sell'][0] + ': ' + str(abs(action_dict['Sell'][1])) + '\n'
                     player.inventory.loc[gold_index, 'Amount'] = gold
                     embed.add_field(name = 'BOUGHT', value = buy_string, inline = True)
@@ -826,7 +826,7 @@ class AccountCommands(commands.Cog):
                 else:
                     player.inventory = playerClass.Player.updateItem(player, [item], [-amount])
                     lootbox_rewards = lootbox.CommonLootbox().open(amount)
-                    player.inventory = playerClass.Player.updateItem(player, lootbox_rewards[0].tolist(), lootbox_rewards[1].tolist())
+                    player.inventory = playerClass.Player.updateItem(player, lootbox_rewards[0], lootbox_rewards[1])
                     sqlCommands.save(id, player, database = 'player')
                     text = ''
                     for name, freq in zip(lootbox_rewards[0], lootbox_rewards[1]):

@@ -111,7 +111,3 @@ class TreeMonster(Enemy):
         self.ListOfDropWeights = [5, 5, 1]
         self.DropNumber = int(np.mean([x for x in self.stats_dictionary.values() if type(x) == int]))
 
-
-#golem = Golem('Thuhij',[0,5],[0,5],[0,5],[0,5],[0,5],[0,5],2, 2, 2)
-
-#drops = golem.mobDrop(['Gold','Stone','Gem'],[5,5,0],dropnumber=5)

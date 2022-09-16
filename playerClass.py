@@ -19,7 +19,7 @@ class Player:
         self.CurrentHealth = self.stats_dictionary['Max Health']
         self.inventory = pd.DataFrame(columns= ['Name','Description','Stats', 'Amount', 'Type'], dtype=object)
         self.equipment = pd.DataFrame(data = 'None', columns= ['Name','Stats','Type'],index = ['Weapon','Armor','Pet'], dtype=object) 
-        self.inventory = Player.addItem(self, ['Gold'],[100])
+        self.inventory = Player.updateItem(self, ['Gold'],[100])
 
     def equip(self, equipmentName):
         if equipmentName in self.inventory.loc[:,'Name'].values:
@@ -122,35 +122,6 @@ class Player:
             return True
         else:
             return False
-    @staticmethod 
-    def addItem(player, nameOfItem, amounts):
-        #nameOfItem is a list of names of items
-        #amounts is a list of same length as nameOfItems
-        df = pd.read_excel('items.xlsx', index_col = [0], converters={'Name':str, 'Description': str, 'Stats': str, 'Amount': int, 'Type': str})
-        df['Stats'] = df.apply(lambda x: toList(x['Stats']), axis = 1)
-    
-        for name, amount in zip(nameOfItem, amounts):
-            if name in player.inventory.loc[:,'Name'].tolist():
-                index = player.inventory.index[player.inventory['Name'] == name].tolist()
-                newVal = int(player.inventory.loc[index,'Amount']) + amount
-                player.inventory.loc[index, 'Amount'] = newVal
-            else:
-                index = len(player.inventory.index)
-                player.inventory.loc[index] = df.loc[name]
-                player.inventory.loc[index,'Name'] = name
-                player.inventory.loc[index,'Amount'] = amount
-        return player.inventory
-      
-    @staticmethod 
-    def subtractItem(player, nameOfItem, amounts):
-        for name, amount in zip(nameOfItem, amounts):
-            if name in player.inventory.loc[:,'Name'].tolist():
-                index = player.inventory.index[player.inventory['Name'] == name].tolist()
-                newVal = int(player.inventory.loc[index,'Amount']) - amount
-                player.inventory.loc[index, 'Amount'] = newVal
-                if newVal == 0:
-                    player.inventory = player.inventory.drop(index)
-        return player.inventory
     
     @staticmethod 
     def updateItem(player, nameOfItem, amounts):
@@ -159,7 +130,7 @@ class Player:
     
         for name, amount in zip(nameOfItem, amounts):
             if name in player.inventory.loc[:,'Name'].tolist():
-                index = player.inventory.index[player.inventory['Name'] == name].tolist()
+                index = player.inventory.index[player.inventory['Name'] == name].tolist()[0]
                 newVal = int(player.inventory.loc[index,'Amount']) + amount
                 player.inventory.loc[index, 'Amount'] = newVal
                 if newVal == 0:
@@ -169,13 +140,17 @@ class Player:
                 player.inventory.loc[index] = df.loc[name]
                 player.inventory.loc[index,'Name'] = name
                 player.inventory.loc[index,'Amount'] = amount
+                if amount == 0:
+                    player.inventory = player.inventory.drop(index)
+            player.inventory.reset_index(drop=True, inplace = True)
+            
               
-            return player.inventory
+        return player.inventory
 
 class Warrior(Player):
     def __init__(self, name):
         Player.__init__(self, name)
-        self.inventory = Player.addItem(self, ['Wooden Sword','Cloth Armor'], [1,1])
+        self.inventory = Player.updateItem(self, ['Wooden Sword','Cloth Armor'], [1,1])
         self.equip('Wooden Sword')
         self.equip('Cloth Armor')
         self.role = 'Warrior'
@@ -191,7 +166,7 @@ class Warrior(Player):
 class Mage(Player):
     def __init__(self, name):
         Player.__init__(self, name)
-        self.inventory = Player.addItem(self, ['Wooden Staff','Cloth Robe'],[1,1])
+        self.inventory = Player.updateItem(self, ['Wooden Staff','Cloth Robe'],[1,1])
         self.equip('Wooden Staff')
         self.equip('Cloth Robe')
         self.role = 'Mage'
@@ -204,3 +179,4 @@ class Mage(Player):
         else:
             matk = math.floor(self.stats_dictionary['Magic Attack'] / 10)
         return matk + self.Level 
+

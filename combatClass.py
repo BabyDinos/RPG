@@ -2,11 +2,13 @@ import playerClass
 import enemyClass
 import random
 import nextcord
-
+from playerClass import Player
+import sqliteCommands
 
 class Combat:
 
-    def __init__(self, player, enemy):
+    def __init__(self, player, enemy, id):
+        self.id = id
         self.player = player
         self.enemy = enemy
         self.turn = 1
@@ -159,8 +161,7 @@ class Combat:
         enemy_drops = self.enemy.mobDrop(self.enemy.ListOfDrops,
                                     self.enemy.ListOfDropWeights,
                                     dropnumber=self.enemy.DropNumber)
-        self.player.inventory = playerClass.Player.addItem(self.player, enemy_drops[0],
-                                    enemy_drops[1])
+        self.player.inventory = playerClass.Player.updateItem(self.player, enemy_drops[0], enemy_drops[1])
         self.player.CurrentHealth = self.player.stats_dictionary['Current Health']
         self.player.stats_dictionary = self.player_total_dictionary
         self.player.CurrentEXP += self.enemy.xpDrop()
@@ -169,12 +170,16 @@ class Combat:
             if x == 'Gold':
                 x += ' 🪙'
             summary_embed.add_field(name=x, value=y)
-        summary_embed.add_field(name='\u200b',value=self.player.Name + ' gained ' + str(self.enemy.xpDrop()) + ' <:exp:1018668173958053888>',inline=False)
-        return [summary_embed, self.player]
+        summary_embed.add_field(name='\u200b',value= self.player.Name + ' gained ' + str(self.enemy.xpDrop()) + ' <:exp:1018668173958053888>',inline=False)
+        sqliteCommands.sqlCommands.save(self.id, self.player, database='player')
+        return summary_embed
 
     def playerLost(self):
         self.player.stats_dictionary = self.player_total_dictionary
         self.player.CurrentHealth = 0
         summary_embed = nextcord.Embed(title = '☠️ Player ' + self.player.Name + ' has lost to ' + self.enemy.Name + ' ☠️')
-        return [summary_embed, self.player]
+        sqliteCommands.sqlCommands.save(self.id, self.player, database='player')
+        return summary_embed
+
+
 
