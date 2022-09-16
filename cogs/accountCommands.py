@@ -83,7 +83,7 @@ class AccountCommands(commands.Cog):
                     username,
                     description='Welcome to RPG!')
                 await interaction.response.edit_message(embed=embed,
-                                                delete_after=20)
+                                                view = View())
                 await member.edit(nick=username)
                 
             Warrior_Button = Button(label='Warrior')

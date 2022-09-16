@@ -147,8 +147,7 @@ class Combat:
         elif self.player.role == 'Mage' and self.off_cooldown <= self.turn:
             damage = self.player.fireBall()
             self.enemy.stats_dictionary['Current Health'] -= damage
-            situation = self.player.Name + ' dealt ' + str(damage) + ' magic damage to ' + self.enemy.Name + '\nSpecial Ability is off cooldown in ' + str(self.player.fireBallCooldown) 
-            + ' turns'
+            situation = self.player.Name + ' dealt ' + str(damage) + ' magic damage to ' + self.enemy.Name + '\nSpecial Ability is off cooldown in ' + str(self.player.fireBallCooldown) + ' turns'
             self.off_cooldown = self.turn + self.player.fireBallCooldown
         else:
             situation = 'Ability on Cooldown'
