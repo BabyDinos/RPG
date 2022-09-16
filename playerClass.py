@@ -38,13 +38,22 @@ class Player:
             return False
 
     def attackSpeed(self, enemy):
-      multiplier = 100
-      decision = random.choices(['Player','Enemy'], weights = [self.stats_dictionary['Attack Speed']/multiplier, enemy.stats_dictionary['Attack Speed']/multiplier])
+        player_attack_speed = self.stats_dictionary['Attack Speed']
+        enemy_attack_speed = enemy.stats_dictionary['Attack Speed']
+        total_attack_speed = player_attack_speed + enemy_attack_speed
+        if (player_attack_speed/total_attack_speed) > (2/3):
+            player_weight = (2/3)
+            enemy_weight = (1/3)
+        else:
+            player_weight = player_attack_speed
+            enemy_weight = enemy_attack_speed
+    
+        decision = random.choices(['Player','Enemy'], weights = [player_weight, enemy_weight])
 
-      if decision[0] == 'Player':
-          return 'Player Goes'
-      else:
-          return 'Enemy Goes'
+        if decision[0] == 'Player':
+            return 'Player Goes'
+        else:
+            return 'Enemy Goes'
 
     def attack(self):
         if self.equipment.loc['Pet','Type'] == 'Pet:Attack':

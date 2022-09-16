@@ -2,7 +2,6 @@ import playerClass
 import enemyClass
 import random
 import nextcord
-from playerClass import Player
 import sqliteCommands
 
 class Combat:

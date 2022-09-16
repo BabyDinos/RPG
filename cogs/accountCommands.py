@@ -1,7 +1,5 @@
 from nextcord.ext import commands
-import asyncio
 from sqliteCommands import sqlCommands
-import enemyClass 
 import playerClass 
 import nextcord
 from nextcord.ui import Button, View, Select

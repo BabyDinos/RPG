@@ -1,15 +1,12 @@
 from nextcord.ext import commands
 import asyncio
 from sqliteCommands import sqlCommands
-import enemyClass
-import playerClass
 import combatClass
 import nextcord
 from nextcord import Interaction
 import time
 from nextcord.ui import View, Button
 import os
-import random
 
 testServerID = int(os.environ['testServerID'])
 

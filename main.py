@@ -3,7 +3,6 @@ from nextcord.ext import commands
 import os
 from sqlitedict import SqliteDict
 from webserver import keep_alive
-from nextcord import Interaction
 
 intents = nextcord.Intents.default()
 intents.members = True
