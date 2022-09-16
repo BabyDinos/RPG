@@ -14,12 +14,13 @@ with SqliteDict('player.sqlite') as mydict:
         for variable in vars(player).keys():
             vars(newplayer)[variable] = vars(player)[variable]
         #Update inventory with most recent descriptions
-        inventory = pd.DataFrame(columns= ['Name','Description','Stats', 'Amount', 'Type'], dtype=object)
+        newplayer.inventory = pd.DataFrame(columns= ['Name','Description','Stats', 'Amount', 'Type'], dtype=object)
         item_list = []
         amount_list = []
-        for index, row in newplayer.inventory.iterrows():
+        for index, row in player.inventory.iterrows():
             item_list.append(newplayer.inventory.loc[index,'Name'])
             amount_list.append(newplayer.inventory.loc[index,'Amount'])
-        
-        #mydict.commit()
+        newplayer.inventory = playerClass.Player.updateItem(newplayer, item_list, amount_list)
+        mydict[key] = newplayer
+    #mydict.commit()
 

@@ -111,7 +111,7 @@ class AccountCommands(commands.Cog):
             await interaction.response.send_message('Username has been changed from ' + temp + ' to ' + username, delete_after=20, ephemeral = True)
             
     @nextcord.slash_command(guild_ids= [testServerID], description = 'Get information about user')
-    async def info(self, interaction: Interaction, discordtag: Optional[int] = SlashOption(required=False)):  
+    async def info(self, interaction: Interaction, discordtag: Optional[str] = SlashOption(required=False)):  
         if discordtag:
             player = sqlCommands.load(discordtag, database = 'player')
         else:
