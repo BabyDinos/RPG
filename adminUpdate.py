@@ -4,10 +4,22 @@ import pandas as pd
 
 
 with SqliteDict('player.sqlite') as mydict:
-    player = mydict['4777'] 
-    newplayer = playerClass.Warrior(player.Name)
-    for variable in vars(player).keys():
-        vars(newplayer)[variable] = vars(player)[variable]
-    mydict['4777'] = newplayer
-    mydict.commit()
+    for key in mydict.keys():
+        player = mydict[key] 
+        if player.role == 'Warrior':
+            newplayer = playerClass.Warrior(player.Name)
+        elif player.role == 'Mage':
+            newplayer = playerClass.Mage(player.Name)
+        #Update all variables
+        for variable in vars(player).keys():
+            vars(newplayer)[variable] = vars(player)[variable]
+        #Update inventory with most recent descriptions
+        inventory = pd.DataFrame(columns= ['Name','Description','Stats', 'Amount', 'Type'], dtype=object)
+        item_list = []
+        amount_list = []
+        for index, row in newplayer.inventory.iterrows():
+            item_list.append(newplayer.inventory.loc[index,'Name'])
+            amount_list.append(newplayer.inventory.loc[index,'Amount'])
+        
+        #mydict.commit()
 
