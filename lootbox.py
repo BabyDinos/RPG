@@ -22,5 +22,5 @@ class CommonLootbox(lootbox):
 class PremiumLootBox(lootbox):
 
     def __init__(self):
-        self.items = ['Gold','Gem','Panther Tooth','Golden Apple','Tooth Spear', 'Tooth Scepter', 'Gem Armor','Gem Robe','Golden Armor','Golden Robe','Golden Daggers','Golden Staff','Quadruple Fanged Panther','Gem Golem','Golden Treant']
+        self.items = ['Gold','Gem','Panther Tooth','Golden Apple','Tooth Spear', 'Tooth Scepter', 'Gem Armor','Gem Robe','Golden Armor','Golden Robe','Golden Daggers','Golden Staff','Silver Fanged Panther','Gem Golem','Golden Treant']
         self.probabilities = [23.75,23.75,23.75,23.75,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.33,0.33,0.33]

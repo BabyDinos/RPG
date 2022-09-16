@@ -27,7 +27,11 @@ class comCommands(commands.Cog):
 
     #cooldown time should be same as timeout time for embed
     @nextcord.slash_command(guild_ids = [testServerID], description = 'Go adventuring for loot, exp, and gold')
-    async def adventure(self, interaction:Interaction):
+    async def adventure(self):
+        pass
+
+    @adventure.subcommand(description = 'Adventure through the Stone Forest')
+    async def stoneforest(self, interaction:Interaction):
         arr = self.getPlayer(interaction)
         player = arr[0]
         id = arr[1]
@@ -43,8 +47,8 @@ class comCommands(commands.Cog):
                 format(self.adventuretime[id] - time.time()),
                 ephemeral = True)
         else:
-            enemy = combatClass.Combat.enemySpawn(player)
-            combat = combatClass.Combat(player, enemy, id)
+            enemy = combatClass.StoneForest.enemySpawn(player)
+            combat = combatClass.StoneForest(player, enemy, id)
             async def attack_callback(interaction):
                 situation = combat.playerAttack()
                 await interaction.response.edit_message(embed=combat.createEmbed(situation),view=myview)

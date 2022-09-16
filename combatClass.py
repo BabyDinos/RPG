@@ -43,18 +43,6 @@ class Combat:
         embed.add_field(name='\u200b', value=situation, inline=False)
         return embed
 
-    @staticmethod
-    def enemySpawn(player):
-        enemy_choice = random.choices(['Golem', 'Panther', 'Tree Monster'],
-                                        weights=[1, 1, 1])
-        if enemy_choice[0] == 'Golem':
-            enemy = enemyClass.Golem(name='Golem', player=player)
-        elif enemy_choice[0] == 'Panther':
-            enemy = enemyClass.Panther(name='Panther', player=player)
-        elif enemy_choice[0] == 'Tree Monster':
-            enemy = enemyClass.TreeMonster(name='Treant', player=player)
-        return enemy
-
     def enemyDecision(self, weights = [1,1,1]):
         return random.choices(['Enemy Attacked', 'Enemy Defended', 'Enemy Poweredup'],weights=weights)
 
@@ -180,4 +168,22 @@ class Combat:
         return summary_embed
 
 
+class StoneForest(Combat):
+    @staticmethod
+    def enemySpawn(player):
+        enemy_choice = random.choices(['Golem', 'Panther', 'Tree Monster','Gem Golem','Silver Panther','Golden Treant'],
+                                        weights=[33,33,33,0.33,0.33,0.33])
+        if enemy_choice[0] == 'Golem':
+            enemy = enemyClass.Golem(name='Golem', player=player)
+        elif enemy_choice[0] == 'Panther':
+            enemy = enemyClass.Panther(name='Panther', player=player)
+        elif enemy_choice[0] == 'Tree Monster':
+            enemy = enemyClass.TreeMonster(name='Treant', player=player)
+        elif enemy_choice[0] == 'Gem Golem':
+            enemy = enemyClass.TreeMonster(name='Gem Golem', player=player)
+        elif enemy_choice[0] == 'Silver Panther':
+            enemy = enemyClass.TreeMonster(name='Silver Panther', player=player)
+        elif enemy_choice[0] == 'Golden Treant':
+            enemy = enemyClass.TreeMonster(name='Golden Treant', player=player)
+        return enemy
 

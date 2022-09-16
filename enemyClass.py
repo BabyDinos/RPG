@@ -111,3 +111,65 @@ class TreeMonster(Enemy):
         self.ListOfDropWeights = [5, 5, 1]
         self.DropNumber = int(np.mean([x for x in self.stats_dictionary.values() if type(x) == int]))
 
+class GemGolem(Enemy):
+    def __init__(self, name, player, bonuses = [4,2,2,4,4,2]):
+            Enemy.__init__(self, name, player)
+            bonuses = np.asarray(bonuses) + player.Level
+            for count, key in enumerate(self.stats_dictionary.keys()):
+                if bonuses[count] == 0:
+                    continue
+                elif bonuses[count] > 0:
+                    self.stats_dictionary[key] += random.randint(0, bonuses[count])
+                else:
+                    debuff = random.randint(bonuses[count], 0)
+                    if abs(debuff) > self.stats_dictionary[key]:
+                        self.stats_dictionary[key] = 1
+                    else:
+                        self.stats_dictionary[key] += debuff
+
+
+            self.ListOfDrops = ['Gold','Stone','Gem','Stone Sword', 'Stone Staff','Gem Armor','Gem Robe','Golemite','Gem Golem']
+            self.ListOfDropWeights = [50,25,20,2,2,0.75,0.75,0.25,0.25]
+            self.DropNumber = int(np.mean([x for x in self.stats_dictionary.values() if type(x) == int]))
+
+class SilverPanther(Enemy):
+    def __init__(self, name, player, bonuses = [2,6,2,2,2,4]):
+            Enemy.__init__(self, name, player)
+            bonuses = np.asarray(bonuses) + player.Level
+            for count, key in enumerate(self.stats_dictionary.keys()):
+                if bonuses[count] == 0:
+                    continue
+                elif bonuses[count] > 0:
+                    self.stats_dictionary[key] += random.randint(0, bonuses[count])
+                else:
+                    debuff = random.randint(bonuses[count], 0)
+                    if abs(debuff) > self.stats_dictionary[key]:
+                        self.stats_dictionary[key] = 1
+                    else:
+                        self.stats_dictionary[key] += debuff
+
+
+            self.ListOfDrops = ['Gold','Meat','Hide','Panther Tooth','Hide Armor', 'Hide Robe','Tooth Spear','Tooth Scepter','Panther Cub','Silver Fanged Panther']
+            self.ListOfDropWeights = [25,25,25,20,2,2,0.75,0.75,0.25,0.25]
+            self.DropNumber = int(np.mean([x for x in self.stats_dictionary.values() if type(x) == int]))
+
+class GoldenTreant(Enemy):
+    def __init__(self, name, player, bonuses = [5,2,2,2,5,2]):
+            Enemy.__init__(self, name, player)
+            bonuses = np.asarray(bonuses) + player.Level
+            for count, key in enumerate(self.stats_dictionary.keys()):
+                if bonuses[count] == 0:
+                    continue
+                elif bonuses[count] > 0:
+                    self.stats_dictionary[key] += random.randint(0, bonuses[count])
+                else:
+                    debuff = random.randint(bonuses[count], 0)
+                    if abs(debuff) > self.stats_dictionary[key]:
+                        self.stats_dictionary[key] = 1
+                    else:
+                        self.stats_dictionary[key] += debuff
+
+
+            self.ListOfDrops = ['Gold','Bark','Golden Apple','Bark Armor','Bark Robe', 'Bark Axe','Bark Wand','Golden Armor','Golden Robe','Golden Daggers','Golden Staff','Tweant','Golden Treant']
+            self.ListOfDropWeights = [50,24.75,20,1,1,1,1,0.25,0.25,0.25,0.25,0.125,0.125]
+            self.DropNumber = int(np.mean([x for x in self.stats_dictionary.values() if type(x) == int]))
