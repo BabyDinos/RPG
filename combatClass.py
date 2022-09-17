@@ -78,6 +78,17 @@ class Combat:
             context = self.player.equipment.loc['Pet','Name'] + ' aids and defends ' + str(petdefensestat + petmagicdefensestat) + ' damage\n'
         return [context, petdefensestat, petmagicdefensestat]
 
+    def petPowerUp(self):
+        if self.player.equipment.loc['Pet','Type'] == 'Pet:PowerUp': 
+            increase = random.randint(self.equipment.loc['Pet','Stats'][0], self.equipment.loc['Pet','Stats'][1])
+            self.player.stats_dictionary['Attack'] += increase
+            self.player.stats_dictionary['Magic Attack'] += increase
+            self.player.stats_dictionary['Attack Speed'] += increase
+            context = self.player.equipment.loc['Pet','Name'] + ' aids and powerups ' + self.player.Name +  ' for ' + str(increase) + '\n'
+            return [context, increase]
+        else:
+            return False
+
     def playerAttack(self):
         enemy_decisions = self.enemyDecision()
         player_attack = self.player.attack()
@@ -153,6 +164,7 @@ class Combat:
         player_defend = self.player.defend()
         player_defend = sum(list(player_defend.values()))
         petsummary = self.petDefend()
+        situation = ''
         if enemy_decisions[0] == 'Enemy Attacked':
             enemy_attack = self.enemy.enemyAttack()
             enemy_damage = sum(list(enemy_attack.values()))
@@ -161,14 +173,14 @@ class Combat:
                 player_defend += petsummary[1] + petsummary[2]
             if (enemy_damage - player_defend) > 0:
                 self.player.stats_dictionary['Current Health'] -= (enemy_damage - player_defend)
-                situation = self.player.Name + ' defends ' + str(player_defend) + ' out of ' + str(enemy_damage) + ' dealt by ' + self.enemy.Name
+                situation += self.player.Name + ' defends ' + str(player_defend) + ' out of ' + str(enemy_damage) + ' dealt by ' + self.enemy.Name
             else:
-                situation = self.player.Name + ' defended all the damage from ' + self.enemy.Name
+                situation += self.player.Name + ' defended all the damage from ' + self.enemy.Name
         elif enemy_decisions[0] == 'Enemy Defended':
-            situation = 'Both ' + self.player.Name + ' and ' + self.enemy.Name + ' defended'
+            situation += 'Both ' + self.player.Name + ' and ' + self.enemy.Name + ' defended'
         elif enemy_decisions[0] == 'Enemy Poweredup':
             self.enemy.enemyPowerUp()
-            situation = self.player.Name + ' defended, but ' + self.enemy.Name + ' powered up'
+            situation += self.player.Name + ' defended, but ' + self.enemy.Name + ' powered up'
         self.turn += 1
         if self.off_cooldown > self.turn:
             situation += '\nSpecial Ability is On Cooldown'
@@ -179,6 +191,10 @@ class Combat:
     def playerPowerUp(self):
         enemy_decisions = self.enemyDecision()
         self.player.powerUp()
+        situation = ''
+        petsummary = self.petPowerUp()
+        if petsummary:
+            situation += petsummary[0] 
         if enemy_decisions[0] == 'Enemy Attacked':
             enemy_attack = self.enemy.enemyAttack()
             enemy_full_damage = sum(list(enemy_attack.values()))

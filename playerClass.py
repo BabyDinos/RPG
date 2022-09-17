@@ -63,11 +63,6 @@ class Player:
         self.stats_dictionary['Attack'] = int(math.ceil(self.stats_dictionary['Attack'] * 1.5))
         self.stats_dictionary['Magic Attack'] = int(math.ceil(self.stats_dictionary['Magic Attack'] * 1.5))
         self.stats_dictionary['Attack Speed'] = int(math.ceil(self.stats_dictionary['Attack Speed'] * 1.5))
-        if self.equipment.loc['Pet','Type'] == 'Pet:PowerUp': 
-            increase = random.randint(self.equipment.loc['Pet','Stats'][0], self.equipment.loc['Pet','Stats'][1])
-            self.stats_dictionary['Attack'] += increase
-            self.stats_dictionary['Magic Attack'] += increase
-            self.stats_dictionary['Attack Speed'] += increase
         return self.stats_dictionary['Attack'], self.stats_dictionary['Magic Attack'], self.stats_dictionary['Attack Speed']
 
     def levelUp(self):
