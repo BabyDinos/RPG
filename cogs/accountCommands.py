@@ -657,7 +657,7 @@ class AccountCommands(commands.Cog):
                     'Golden Apple': 5,
                     'Gem': 5
                 },
-                'Golden Lootbox':{
+                'Mythical Lootbox':{
                     'Gold': 5000
                 }
             }
@@ -674,7 +674,7 @@ class AccountCommands(commands.Cog):
                     embed.add_field(name=x, value='Total: ' + str(y), inline = False)
                 embed.add_field(name = 'Common Lootbox', value = common_lootbox_amount, inline = False)
                 embed.add_field(name = 'Premium Lootbox', value = premium_lootbox_amount, inline = False)
-                embed.add_field(name = 'Golden Lootbox', value = mythical_lootbox_amount, inline = False)
+                embed.add_field(name = 'Mythical Lootbox', value = mythical_lootbox_amount, inline = False)
                 return embed
 
             selectoptions = [
@@ -682,7 +682,7 @@ class AccountCommands(commands.Cog):
                                       description='5 Stone, 5 Hide, 5 Bark'),
                 nextcord.SelectOption(label='Premium Lootbox',
                                       description='5 Gem, 5 Panther Tooth, 5 Golden Apple'),
-                nextcord.SelectOption(label='Golden Lootbox',
+                nextcord.SelectOption(label='Mythical Lootbox',
                                       description='5000 Gold')
             ]
 
@@ -697,8 +697,8 @@ class AccountCommands(commands.Cog):
                     item = 'Common Lootbox'
                 elif dropdown.values[0] == 'Premium Lootbox':
                     item = 'Premium Lootbox'
-                elif dropdown.values[0] == 'Golden Lootbox':
-                    item = 'Golden Lootbox'
+                elif dropdown.values[0] == 'Mythical Lootbox':
+                    item = 'Mythical Lootbox'
 
             async def amountdropdown_callback(interaction):
                 nonlocal amount
@@ -718,7 +718,7 @@ class AccountCommands(commands.Cog):
                     common_lootbox_amount += amount
                 elif item == 'Premium Lootbox':
                     premium_lootbox_amount += amount
-                elif item == 'Golden Lootbox':
+                elif item == 'Mythical Lootbox':
                     mythical_lootbox_amount += amount
                 await interaction.response.edit_message(embed=createEmbed(), view=myview)
                 
@@ -731,7 +731,7 @@ class AccountCommands(commands.Cog):
                     common_lootbox_amount -= amount
                 elif item == 'Premium Lootbox':
                     premium_lootbox_amount -= amount
-                elif item == 'Golden Lootbox':
+                elif item == 'Mythical Lootbox':
                     mythical_lootbox_amount += -amount
                 await interaction.response.edit_message(embed=createEmbed(), view=myview)
                 
@@ -750,7 +750,7 @@ class AccountCommands(commands.Cog):
                         items_list.append(item)
                         amount_list.append(-(original_value - value))
                     player.inventory = playerClass.Player.updateItem(player, items_list, amount_list)
-                    player.inventory = playerClass.Player.updateItem(player, ['Common Loot Box','Premium Loot Box','Golden Lootbox'],[common_lootbox_amount, premium_lootbox_amount, mythical_lootbox_amount])
+                    player.inventory = playerClass.Player.updateItem(player, ['Common Loot Box','Premium Loot Box','Mythical Lootbox'],[common_lootbox_amount, premium_lootbox_amount, mythical_lootbox_amount])
                     sqlCommands.save(id, player, database = 'player')
                     embed = nextcord.Embed(title = 'Purchase Confirmed', description = 'You got ' + str(common_lootbox_amount) + ' Common Loot Boxes and ' + str(premium_lootbox_amount) + ' Premium Loot Boxes and ' +
                                             str(mythical_lootbox_amount) + ' Mythical Loot Boxes!')
