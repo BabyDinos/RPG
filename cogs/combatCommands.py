@@ -151,15 +151,14 @@ class comCommands(commands.Cog):
         if not player:
             await interaction.response.send_message('You are not registered', ephemeral= True)
         else:
-            
-                if player.consume(consumeable):
-                    await interaction.response.send_message(player.Name + ' has consumed ' +
-                                   consumeable, ephemeral = True)
-                else:
-                    await interaction.response.send_message(consumeable +
-                                   ' was not found',
-                                   ephemeral = True)
-                sqlCommands.save(id, player, database='player')
+            if player.consume(consumeable):
+                await interaction.response.send_message(player.Name + ' has consumed ' +
+                                consumeable, ephemeral = True)
+            else:
+                await interaction.response.send_message(consumeable +
+                                ' was not found',
+                                ephemeral = True)
+            sqlCommands.save(id, player, database='player')
 
 def setup(bot):
     bot.add_cog(comCommands(bot))

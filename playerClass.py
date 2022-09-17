@@ -37,35 +37,7 @@ class Player:
         else:
             return False
 
-    def attackSpeed(self, enemy):
-        player_attack_speed = self.stats_dictionary['Attack Speed']
-        enemy_attack_speed = enemy.stats_dictionary['Attack Speed']
-        total_attack_speed = player_attack_speed + enemy_attack_speed
-        if (player_attack_speed/total_attack_speed) > (2/3):
-            player_weight = (2/3)
-            enemy_weight = (1/3)
-        else:
-            player_weight = player_attack_speed
-            enemy_weight = enemy_attack_speed
-    
-        decision = random.choices(['Player','Enemy'], weights = [player_weight, enemy_weight])
-
-        if decision[0] == 'Player':
-            return 'Player Goes'
-        else:
-            return 'Enemy Goes'
-
     def attack(self):
-        if self.equipment.loc['Pet','Type'] == 'Pet:Attack':
-            petattackstat = random.randint(self.equipment.loc['Pet','Stats'][0], self.equipment.loc['Pet','Stats'][1])
-            petmagicattackstat = 0
-        elif self.equipment.loc['Pet','Type'] == 'Pet:Magic Attack':
-            petattackstat = 0
-            petmagicattackstat = random.randint(self.equipment.loc['Pet','Stats'][0], self.equipment.loc['Pet','Stats'][1])
-        else:
-            petattackstat = 0
-            petmagicattackstat = 0
-
         lower_bound = int(self.equipment.loc['Weapon','Stats'][0])
         upper_bound = int(self.equipment.loc['Weapon','Stats'][1])
         if self.equipment.loc['Weapon','Type'] == 'Attack':
@@ -74,19 +46,9 @@ class Player:
         else:
             currentattack = random.randint(0, self.stats_dictionary['Attack'])
             currentmagicattack = random.randint(lower_bound+self.stats_dictionary['Magic Attack'], self.stats_dictionary['Magic Attack'] + upper_bound)
-        return {'Attack' : currentattack + petattackstat + petmagicattackstat, 'Magic Attack': currentmagicattack + petattackstat + petmagicattackstat} 
+        return {'Attack' : currentattack, 'Magic Attack': currentmagicattack} 
 
     def defend(self):
-        if self.equipment.loc['Pet','Type'] == 'Pet:Defense':
-            petdefensestat = random.randint(self.equipment.loc['Pet','Stats'][0], self.equipment.loc['Pet','Stats'][1])
-            petmagicdefensestat = 0
-        elif self.equipment.loc['Pet','Type'] == 'Pet:Magic Defense':
-            petdefensestat = 0
-            petmagicdefensestat = random.randint(self.equipment.loc['Pet','Stats'][0], self.equipment.loc['Pet','Stats'][1])
-        else:
-            petdefensestat = 0
-            petmagicdefensestat = 0
-
         lower_bound = int(self.equipment.loc['Armor','Stats'][0])
         upper_bound = int(self.equipment.loc['Armor','Stats'][1])
         if self.equipment.loc['Armor','Type'] == 'Defense':
@@ -95,7 +57,7 @@ class Player:
         else:
             currentdefense = random.randint(0, self.stats_dictionary['Defense'])
             currentmagicdefense = random.randint(lower_bound+self.stats_dictionary['Magic Defense'], self.stats_dictionary['Magic Defense'] + upper_bound)
-        return {'Defense': currentdefense + petdefensestat + petmagicdefensestat, 'Magic Defense': currentmagicdefense + petdefensestat + petmagicdefensestat}
+        return {'Defense': currentdefense, 'Magic Defense': currentmagicdefense}
 
     def powerUp(self):
         self.stats_dictionary['Attack'] = int(math.ceil(self.stats_dictionary['Attack'] * 1.5))

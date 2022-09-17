@@ -630,7 +630,7 @@ class AccountCommands(commands.Cog):
             await interaction.response.send_message('You are not registered', delete_after=20, ephemeral = True)
         else:
             transaction_dictionary = {}
-            items_needed = ['Stone','Hide','Bark','Golden Apple','Panther Tooth','Gem']
+            items_needed = ['Stone','Hide','Bark','Golden Apple','Panther Tooth','Gem','Gold']
             amount_list = []
             for items in items_needed:
                 if items in player.inventory.loc[:,'Name'].tolist():
@@ -656,10 +656,14 @@ class AccountCommands(commands.Cog):
                     'Panther Tooth': 5,
                     'Golden Apple': 5,
                     'Gem': 5
+                },
+                'Golden Lootbox':{
+                    'Gold': 5000
                 }
             }
             common_lootbox_amount = 0
             premium_lootbox_amount = 0
+            mythical_lootbox_amount = 0
             item = ''
             amount = 0
 
@@ -670,13 +674,16 @@ class AccountCommands(commands.Cog):
                     embed.add_field(name=x, value='Total: ' + str(y), inline = False)
                 embed.add_field(name = 'Common Lootbox', value = common_lootbox_amount, inline = False)
                 embed.add_field(name = 'Premium Lootbox', value = premium_lootbox_amount, inline = False)
+                embed.add_field(name = 'Golden Lootbox', value = mythical_lootbox_amount, inline = False)
                 return embed
 
             selectoptions = [
                 nextcord.SelectOption(label='Common Lootbox',
                                       description='5 Stone, 5 Hide, 5 Bark'),
                 nextcord.SelectOption(label='Premium Lootbox',
-                                      description='5 Gem, 5 Panther Tooth, 5 Golden Apple')
+                                      description='5 Gem, 5 Panther Tooth, 5 Golden Apple'),
+                nextcord.SelectOption(label='Golden Lootbox',
+                                      description='5000 Gold')
             ]
 
             amountselectoptions = [
@@ -690,6 +697,8 @@ class AccountCommands(commands.Cog):
                     item = 'Common Lootbox'
                 elif dropdown.values[0] == 'Premium Lootbox':
                     item = 'Premium Lootbox'
+                elif dropdown.values[0] == 'Golden Lootbox':
+                    item = 'Golden Lootbox'
 
             async def amountdropdown_callback(interaction):
                 nonlocal amount
@@ -702,32 +711,36 @@ class AccountCommands(commands.Cog):
                 
 
             async def increaseAmount_callback(interaction):
-                nonlocal common_lootbox_amount, premium_lootbox_amount
+                nonlocal common_lootbox_amount, premium_lootbox_amount, mythical_lootbox_amount
                 for resource, cost in costs_dictionary[item].items():
                     transaction_dictionary[resource] -= cost * amount
                 if item == 'Common Lootbox':
                     common_lootbox_amount += amount
                 elif item == 'Premium Lootbox':
                     premium_lootbox_amount += amount
+                elif item == 'Golden Lootbox':
+                    mythical_lootbox_amount += amount
                 await interaction.response.edit_message(embed=createEmbed(), view=myview)
                 
 
             async def decreaseAmount_callback(interaction):
-                nonlocal common_lootbox_amount, premium_lootbox_amount
+                nonlocal common_lootbox_amount, premium_lootbox_amount, mythical_lootbox_amount
                 for resource, cost in costs_dictionary[item].items():
                     transaction_dictionary[resource] += cost * amount
                 if item == 'Common Lootbox':
                     common_lootbox_amount -= amount
                 elif item == 'Premium Lootbox':
                     premium_lootbox_amount -= amount
+                elif item == 'Golden Lootbox':
+                    mythical_lootbox_amount += -amount
                 await interaction.response.edit_message(embed=createEmbed(), view=myview)
                 
 
             async def confirmButton_callback(interaction):
-                if common_lootbox_amount == 0 and premium_lootbox_amount == 0:
+                if common_lootbox_amount == 0 and premium_lootbox_amount == 0 and mythical_lootbox_amount == 0:
                     embed = nextcord.Embed(title = 'No Purchase was Made')
                     await interaction.response.edit_message(embed = embed, view = View())
-                elif any(value < 0 for value in transaction_dictionary.values()) or common_lootbox_amount < 0 or premium_lootbox_amount < 0:
+                elif any(value < 0 for value in transaction_dictionary.values()) or common_lootbox_amount < 0 or premium_lootbox_amount < 0 or mythical_lootbox_amount < 0:
                     embed = nextcord.Embed(title = 'Transaction Failed')
                     await interaction.response.edit_message(embed = embed, view = View())
                     return
@@ -737,9 +750,10 @@ class AccountCommands(commands.Cog):
                         items_list.append(item)
                         amount_list.append(-(original_value - value))
                     player.inventory = playerClass.Player.updateItem(player, items_list, amount_list)
-                    player.inventory = playerClass.Player.updateItem(player, ['Common Loot Box','Premium Loot Box'],[common_lootbox_amount, premium_lootbox_amount])
+                    player.inventory = playerClass.Player.updateItem(player, ['Common Loot Box','Premium Loot Box','Golden Lootbox'],[common_lootbox_amount, premium_lootbox_amount, mythical_lootbox_amount])
                     sqlCommands.save(id, player, database = 'player')
-                    embed = nextcord.Embed(title = 'Purchase Confirmed', description = 'You got ' + str(common_lootbox_amount) + ' Common Loot Boxes and ' + str(premium_lootbox_amount) + ' Premium Loot Boxes!')
+                    embed = nextcord.Embed(title = 'Purchase Confirmed', description = 'You got ' + str(common_lootbox_amount) + ' Common Loot Boxes and ' + str(premium_lootbox_amount) + ' Premium Loot Boxes and ' +
+                                            str(mythical_lootbox_amount) + ' Mythical Loot Boxes!')
                     await interaction.response.edit_message(embed = embed, view = View())
 
             dropdown = Select(placeholder='Choose Lootbox', options=selectoptions)
@@ -792,7 +806,8 @@ class AccountCommands(commands.Cog):
 
             selectoptions = [
                 nextcord.SelectOption(label='Common Loot Box'),
-                nextcord.SelectOption(label='Premium Loot Box')
+                nextcord.SelectOption(label='Premium Loot Box'),
+                nextcord.SelectOption(label='Mythical Loot Box')
             ]
             amountselectoptions = [
                 nextcord.SelectOption(label='1'),
@@ -805,6 +820,8 @@ class AccountCommands(commands.Cog):
                     item = 'Common Loot Box'
                 elif dropdown.values[0] == 'Premium Loot Box':
                     item = 'Premium Loot Box'
+                elif dropdown.values[0] == 'Mythical Loot Box':
+                    item = 'Mythical Loot Box'
 
             async def amountdropdown_callback(interaction):
                 nonlocal amount
@@ -823,7 +840,12 @@ class AccountCommands(commands.Cog):
                     await interaction.response.edit_message(embed = createEmbed(name = text), view = myview)
                 else:
                     player.inventory = playerClass.Player.updateItem(player, [item], [-amount])
-                    lootbox_rewards = lootbox.CommonLootbox().open(amount)
+                    if item == 'Common Loot Box':
+                        lootbox_rewards = lootbox.CommonLootbox().open(amount)
+                    elif item == 'Premium Loot Box':
+                        lootbox_rewards = lootbox.PremiumLootBox().open(amount)
+                    elif item == 'Mythical Loot Box':
+                        lootbox_rewards = lootbox.MythicalLootBox().open(amount)
                     player.inventory = playerClass.Player.updateItem(player, lootbox_rewards[0], lootbox_rewards[1])
                     sqlCommands.save(id, player, database = 'player')
                     text = ''

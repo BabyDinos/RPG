@@ -46,20 +46,86 @@ class Combat:
     def enemyDecision(self, weights = [1,1,1]):
         return random.choices(['Enemy Attacked', 'Enemy Defended', 'Enemy Poweredup'],weights=weights)
 
+    def petAttack(self):
+        if self.player.equipment.loc['Pet','Type'] == 'Pet:Attack':
+            petattackstat = random.randint(self.equipment.loc['Pet','Stats'][0], self.equipment.loc['Pet','Stats'][1])
+            petmagicattackstat = 0
+        elif self.player.equipment.loc['Pet','Type'] == 'Pet:Magic Attack':
+            petattackstat = 0
+            petmagicattackstat = random.randint(self.equipment.loc['Pet','Stats'][0], self.equipment.loc['Pet','Stats'][1])
+        else:
+            petattackstat = 0
+            petmagicattackstat = 0
+        if petattackstat == 0 and petmagicattackstat == 0:
+            return False
+        else:
+            context = self.player.equipment.loc['Pet','Name'] + ' aids and attacks for ' + str(petattackstat + petmagicattackstat) + ' damage\n'
+        return [context, petattackstat, petmagicattackstat]
+
+    def petDefend(self):
+        if self.player.equipment.loc['Pet','Type'] == 'Pet:Defense':
+            petdefensestat = random.randint(self.equipment.loc['Pet','Stats'][0], self.equipment.loc['Pet','Stats'][1])
+            petmagicdefensestat = 0
+        elif self.player.equipment.loc['Pet','Type'] == 'Pet:Magic Defense':
+            petdefensestat = 0
+            petmagicdefensestat = random.randint(self.equipment.loc['Pet','Stats'][0], self.equipment.loc['Pet','Stats'][1])
+        else:
+            petdefensestat = 0
+            petmagicdefensestat = 0
+        if petdefensestat == 0 and petmagicdefensestat == 0:
+            return False
+        else:
+            context = self.player.equipment.loc['Pet','Name'] + ' aids and defends ' + str(petdefensestat + petmagicdefensestat) + ' damage\n'
+        return [context, petdefensestat, petmagicdefensestat]
+
     def playerAttack(self):
         enemy_decisions = self.enemyDecision()
         player_attack = self.player.attack()
+        petsummary = self.petAttack()
         full_damage = player_attack['Attack'] + player_attack['Magic Attack']
+        enemy_attack = self.enemy.enemyAttack()
+        enemy_full_damage = sum(list(enemy_attack.values()))
+
         if enemy_decisions[0] == 'Enemy Attacked':
-            attackspeed_decision = self.player.attackSpeed(self.enemy)
-            if attackspeed_decision == 'Player Goes':
+            if self.player.stats_dictionary['Attack Speed'] > self.enemy.stats_dictionary['Attack Speed']:
+                situation = self.player.Name + ' attacks first!\n'
+                if petsummary:
+                    full_damage += petsummary[1] + petsummary[2]
+                    situation += petsummary[0] 
                 self.enemy.stats_dictionary['Current Health'] -= full_damage
-                situation = self.player.Name + ' swiftly attacks ' + self.enemy.Name + ' for ' + str(full_damage) + ' attack'
-            else:
-                enemy_attack = self.enemy.enemyAttack()
-                enemy_full_damage = sum(list(enemy_attack.values()))
+                if self.enemy.stats_dictionary['Current Health'] <= 0:
+                    situation += self.player.Name + ' defeats ' + self.enemy.Name + ' dealing ' + str(full_damage) + ' damage'
+                    return situation
+                else:
+                    situation += self.player.Name + ' deals ' + str(full_damage) + ' damage to ' + self.enemy.Name + '\n'
+                situation += self.enemy.Name + ' attacks next!\n'
                 self.player.stats_dictionary['Current Health'] -= enemy_full_damage
-                situation = self.enemy.Name + ' swiftly attacks ' + self.player.Name + ' for ' + str(enemy_full_damage) + ' attack'
+                if self.player.stats_dictionary['Current Health'] <= 0:
+                    situation += self.enemy.Name + ' defeats ' + self.player.Name + ' with a total of ' + str(enemy_full_damage)
+                    return situation
+                else:
+                    situation += self.enemy.Name + ' deals ' + str(enemy_full_damage) + ' damage to ' + self.player.Name
+
+            else:
+                situation = self.enemy.Name + ' attacks first!\n'
+                self.player.stats_dictionary['Current Health'] -= enemy_full_damage
+                if self.player.stats_dictionary['Current Health'] <= 0:
+                    situation += self.enemy.Name + ' defeats ' + self.player.Name + ' dealing ' + str(enemy_full_damage) + ' damage'
+                    return situation
+                else:
+                    situation += self.enemy.Name + ' deals ' + str(enemy_full_damage) + ' damage to ' + self.player.Name + '\n'
+                situation += self.player.Name + ' attacks next!\n'
+                if petsummary:
+                    full_damage += petsummary[1] + petsummary[2]
+                    situation += petsummary[0] 
+                self.enemy.stats_dictionary['Current Health'] -= full_damage
+                if self.enemy.stats_dictionary['Current Health'] <= 0:
+                    situation += self.player.Name + ' defeats ' + self.enemy.Name + ' with a total of ' + str(full_damage)
+                    return situation
+                else:
+                    situation += self.player.Name + ' deals ' + str(full_damage) + ' damage to ' + self.enemy.Name
+
+
         elif enemy_decisions[0] == 'Enemy Defended':
             enemy_defense = self.enemy.enemyDefend()
             full_defend = enemy_defense['Defense'] + enemy_defense['Magic Defense']
@@ -86,9 +152,13 @@ class Combat:
         enemy_decisions = self.enemyDecision()
         player_defend = self.player.defend()
         player_defend = sum(list(player_defend.values()))
+        petsummary = self.petDefend()
         if enemy_decisions[0] == 'Enemy Attacked':
             enemy_attack = self.enemy.enemyAttack()
             enemy_damage = sum(list(enemy_attack.values()))
+            if petsummary:
+                situation += petsummary[0]
+                player_defend += petsummary[1] + petsummary[2]
             if (enemy_damage - player_defend) > 0:
                 self.player.stats_dictionary['Current Health'] -= (enemy_damage - player_defend)
                 situation = self.player.Name + ' defends ' + str(player_defend) + ' out of ' + str(enemy_damage) + ' dealt by ' + self.enemy.Name

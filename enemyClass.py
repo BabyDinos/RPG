@@ -48,7 +48,6 @@ class Enemy:
     def xpDrop(self):
         return self.DropNumber * 3
 
-    
 
 class Golem(Enemy):
     def __init__(self, name, player, bonuses = [2,0,0,2,2,0]):

@@ -20,7 +20,6 @@ async def on_ready():
 
 for filename in os.listdir("./cogs"):
     if filename.endswith(".py"):
-        # cut off the .py from the file name
         bot.load_extension(f"cogs.{filename[:-3]}")
         print(filename[:-3] + ' has loaded')
 
