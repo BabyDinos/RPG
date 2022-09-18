@@ -60,9 +60,9 @@ class Player:
         return {'Defense': currentdefense, 'Magic Defense': currentmagicdefense}
 
     def powerUp(self):
-        self.stats_dictionary['Attack'] = int(math.ceil(self.stats_dictionary['Attack'] * 1.5))
-        self.stats_dictionary['Magic Attack'] = int(math.ceil(self.stats_dictionary['Magic Attack'] * 1.5))
-        self.stats_dictionary['Attack Speed'] = int(math.ceil(self.stats_dictionary['Attack Speed'] * 1.5))
+        self.stats_dictionary['Attack'] = int(math.ceil(self.stats_dictionary['Attack'] + self.Level))
+        self.stats_dictionary['Magic Attack'] = int(math.ceil(self.stats_dictionary['Magic Attack'] + self.Level))
+        self.stats_dictionary['Attack Speed'] = int(math.ceil(self.stats_dictionary['Attack Speed'] + self.Level))
         return self.stats_dictionary['Attack'], self.stats_dictionary['Magic Attack'], self.stats_dictionary['Attack Speed']
 
     def levelUp(self):
@@ -124,10 +124,10 @@ class Warrior(Player):
         self.skilldescription = "The Warrior's ability grants them bonus attack, defense, and attack speed"
     
     def berSerk(self):
-        self.CurrentHealth += self.Level
-        self.stats_dictionary['Attack'] += self.Level
-        self.stats_dictionary['Defense'] += self.Level
-        self.stats_dictionary['Attack Speed'] += self.Level
+        self.CurrentHealth += int(self.Level* 1.5)
+        self.stats_dictionary['Attack'] += int(self.Level * 1.5)
+        self.stats_dictionary['Defense'] += int(self.Level * 1.5)
+        self.stats_dictionary['Attack Speed'] += int(self.Level * 1.5)
     
 class Mage(Player):
     def __init__(self, name):

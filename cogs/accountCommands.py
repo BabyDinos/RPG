@@ -750,7 +750,7 @@ class AccountCommands(commands.Cog):
                         items_list.append(item)
                         amount_list.append(-(original_value - value))
                     player.inventory = playerClass.Player.updateItem(player, items_list, amount_list)
-                    player.inventory = playerClass.Player.updateItem(player, ['Common Loot Box','Premium Loot Box','Mythical Lootbox'],[common_lootbox_amount, premium_lootbox_amount, mythical_lootbox_amount])
+                    player.inventory = playerClass.Player.updateItem(player, ['Common Loot Box','Premium Loot Box','Mythical Loot Box'],[common_lootbox_amount, premium_lootbox_amount, mythical_lootbox_amount])
                     sqlCommands.save(id, player, database = 'player')
                     embed = nextcord.Embed(title = 'Purchase Confirmed', description = 'You got ' + str(common_lootbox_amount) + ' Common Loot Boxes and ' + str(premium_lootbox_amount) + ' Premium Loot Boxes and ' +
                                             str(mythical_lootbox_amount) + ' Mythical Loot Boxes!')

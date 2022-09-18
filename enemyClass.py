@@ -16,6 +16,7 @@ class Enemy:
         self.ListOfDrops = []
         self.ListOfDropWeights = []
         self.DropNumber = 0
+        self.playerLevel = player.Level
 
     def enemyAttack(self):
         attack = random.randint(0, self.stats_dictionary['Attack'])
@@ -28,9 +29,9 @@ class Enemy:
         return {'Defense': currentdefense, 'Magic Defense': currentmagicdefense}
 
     def enemyPowerUp(self):
-        self.stats_dictionary['Attack'] = int(math.ceil(self.stats_dictionary['Attack'] * 1.5))
-        self.stats_dictionary['Magic Attack'] = int(math.ceil(self.stats_dictionary['Magic Attack'] * 1.5))
-        self.stats_dictionary['Attack Speed'] = int(math.ceil(self.stats_dictionary['Attack Speed'] * 1.5))
+        self.stats_dictionary['Attack'] = int(self.stats_dictionary['Attack'] + self.playerLevel)
+        self.stats_dictionary['Magic Attack'] = int(self.stats_dictionary['Magic Attack'] + self.playerLevel)
+        self.stats_dictionary['Attack Speed'] = int(self.stats_dictionary['Attack Speed'] + self.playerLevel)
         return self.stats_dictionary['Attack'], self.stats_dictionary['Magic Attack'], self.stats_dictionary['Attack Speed']
 
     def mobDrop(self, listofdrops, listofdropweights, dropnumber):
@@ -172,3 +173,77 @@ class GoldenTreant(Enemy):
             self.ListOfDrops = ['Gold','Bark','Golden Apple','Bark Armor','Bark Robe', 'Bark Axe','Bark Wand','Golden Armor','Golden Robe','Golden Daggers','Golden Staff','Tweant','Golden Treant']
             self.ListOfDropWeights = [50,24.75,20,1,1,1,1,0.25,0.25,0.25,0.25,0.125,0.125]
             self.DropNumber = int(np.mean([x for x in self.stats_dictionary.values() if type(x) == int]))
+
+class Boss(Enemy):
+    def __init__(self, name, player):
+        Enemy.__init__(self, name, player)
+        self.stats_dictionary = {'Max Health':random.randint(10*player.Level,15*player.Level),
+                        'Attack':random.randint(2*player.Level,5*player.Level),
+                        'Magic Attack':random.randint(3*player.Level,4*player.Level),
+                        'Defense':random.randint(2*player.Level,5*player.Level),
+                        'Magic Defense':random.randint(3*player.Level,4*player.Level),
+                        'Attack Speed':random.randint(2*player.Level,3*player.Level)}
+
+class Dragon(Boss):
+    def __init__(self, name, player, bonuses = [20,20,10,10,10,10]):
+        Boss.__init__(self, name, player)
+        bonuses = np.asarray(bonuses) + player.Level
+        for count, key in enumerate(self.stats_dictionary.keys()):
+            if bonuses[count] == 0:
+                continue
+            elif bonuses[count] > 0:
+                self.stats_dictionary[key] += random.randint(0, bonuses[count])
+            else:
+                debuff = random.randint(bonuses[count], 0)
+                if abs(debuff) > self.stats_dictionary[key]:
+                    self.stats_dictionary[key] = 1
+                else:
+                    self.stats_dictionary[key] += debuff
+        self.ListOfDrops = ['Platinum Coin','Dragon Katana','Dragon Crown','Baby Dragon']
+        self.ListOfDropWeights = [2,1,1,1]
+        self.DropNumber = 1
+        self.AbilityCooldown = 5
+        self.AbilityDuration = 2
+        self.AbilityDamage = int(self.stats_dictionary['Attack'] / player.Level)
+
+class Lich(Boss):
+    def __init__(self, name, player, bonuses = [15,10,20,10,20,5]):
+        Boss.__init__(self, name, player)
+        bonuses = np.asarray(bonuses) + player.Level
+        for count, key in enumerate(self.stats_dictionary.keys()):
+            if bonuses[count] == 0:
+                continue
+            elif bonuses[count] > 0:
+                self.stats_dictionary[key] += random.randint(0, bonuses[count])
+            else:
+                debuff = random.randint(bonuses[count], 0)
+                if abs(debuff) > self.stats_dictionary[key]:
+                    self.stats_dictionary[key] = 1
+                else:
+                    self.stats_dictionary[key] += debuff
+        self.ListOfDrops = ['Platinum Coin','Lich Spellbook','Lich Cloak','Lich Apprentice']
+        self.ListOfDropWeights = [2,1,1,1]
+        self.DropNumber = 1
+        self.AbilityCooldown = 2
+        self.AbilityDamage = 3
+
+class Kraken(Boss):
+    def __init__(self, name, player, bonuses = [20,10,10,20,20,5]):
+        Boss.__init__(self, name, player)
+        bonuses = np.asarray(bonuses) + player.Level
+        for count, key in enumerate(self.stats_dictionary.keys()):
+            if bonuses[count] == 0:
+                continue
+            elif bonuses[count] > 0:
+                self.stats_dictionary[key] += random.randint(0, bonuses[count])
+            else:
+                debuff = random.randint(bonuses[count], 0)
+                if abs(debuff) > self.stats_dictionary[key]:
+                    self.stats_dictionary[key] = 1
+                else:
+                    self.stats_dictionary[key] += debuff
+        self.ListOfDrops = ['Platinum Coin','Tentacle Sai','Sucker Armor','Giant Squid']
+        self.ListOfDropWeights = [2,1,1,1]
+        self.DropNumber = 1
+        self.AbilityCooldown = 1
+        self.AbilityDamage = int(self.stats_dictionary['Max Health'] / 8)
