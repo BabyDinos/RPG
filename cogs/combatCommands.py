@@ -1,6 +1,6 @@
 from nextcord.ext import commands
 import asyncio
-from sqliteCommands import sqlCommands
+from sqliteCommands import sqldictCommands
 import combatClass
 import nextcord
 from nextcord import Interaction
@@ -25,7 +25,7 @@ class comCommands(commands.Cog):
 
     def getPlayer(self, interaction):
         id = str(interaction.user).split('#')[-1]
-        return [sqlCommands.load(id, database='player'), id]
+        return [sqldictCommands.load(id, database='player'), id]
 
     #cooldown time should be same as timeout time for embed
     @nextcord.slash_command(guild_ids = [testServerID], description = 'Go adventuring for loot, exp, and gold')
@@ -191,7 +191,7 @@ class comCommands(commands.Cog):
                                equipment, ephemeral = True)
             else:
                 await interaction.response.send_message('Equipment not found', ephemeral = True)
-            sqlCommands.save(id, player, database='player')
+            sqldictCommands.save(id, player, database='player')
 
     @nextcord.slash_command(guild_ids = [testServerID], description = 'Heal your player to full health')
     async def heal(self, interaction):
@@ -211,7 +211,7 @@ class comCommands(commands.Cog):
             if id in self.adventuretime:
                 del self.adventuretime[id]
             player.CurrentHealth = player.stats_dictionary['Max Health']
-            sqlCommands.save(id, player, database='player')
+            sqldictCommands.save(id, player, database='player')
             await interaction.response.send_message('❤️ Player ' + player.Name +
                            ' has healed to full health ❤️',
                            ephemeral = True)
@@ -235,7 +235,7 @@ class comCommands(commands.Cog):
                 await interaction.response.send_message(consumeable +
                                 ' was not found',
                                 ephemeral = True)
-            sqlCommands.save(id, player, database='player')
+            sqldictCommands.save(id, player, database='player')
 
 def setup(bot):
     bot.add_cog(comCommands(bot))

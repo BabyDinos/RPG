@@ -245,14 +245,14 @@ class Combat:
                 x += ' 🪙'
             summary_embed.add_field(name=x, value=y)
         summary_embed.add_field(name='\u200b',value= self.player.Name + ' gained ' + str(self.enemy.xpDrop()) + ' <:exp:1018668173958053888>',inline=False)
-        sqliteCommands.sqlCommands.save(self.id, self.player, database='player')
+        sqliteCommands.sqldictCommands.save(self.id, self.player, database='player')
         return summary_embed
 
     def playerLost(self):
         self.player.stats_dictionary = self.player_total_dictionary
         self.player.CurrentHealth = 0
         summary_embed = nextcord.Embed(title = '☠️ Player ' + self.player.Name + ' has lost to ' + self.enemy.Name + ' ☠️')
-        sqliteCommands.sqlCommands.save(self.id, self.player, database='player')
+        sqliteCommands.sqldictCommands.save(self.id, self.player, database='player')
         return summary_embed
 
 
@@ -297,7 +297,7 @@ class BossArena(Combat):
     @staticmethod
     def enemySpawn(player):
         enemy_choice = random.choices(['Dragon', 'Lich', 'Kraken'],
-                                        weights=[1, 1 ,0])
+                                        weights=[0, 1 ,0])
         if enemy_choice[0] == 'Dragon':
             enemy = enemyClass.Dragon(name='Dragon', player=player)
         elif enemy_choice[0] == 'Lich':
@@ -337,6 +337,7 @@ class Dragon(BossArena):
             situation += self.enemy.Name + ' breathes a wave of fire onto ' + self.player.Name + '\n' + self.player.Name + ' is burned for ' + str(self.enemy.AbilityDuration) + ' turns'
             self.burn_duration = self.turn + self.enemy.AbilityDuration
             self.enemy_off_cooldown = self.turn + self.enemy.AbilityCooldown
+            return situation
 
         elif enemy_decisions[0] == 'Enemy Attacked':
             if self.player.stats_dictionary['Attack Speed'] > self.enemy.stats_dictionary['Attack Speed']:
@@ -382,13 +383,13 @@ class Dragon(BossArena):
             damage = player_attack['Attack'] - enemy_defense['Defense'] + player_attack['Magic Attack'] - enemy_defense['Magic Defense']
             if damage > 0:
                 self.enemy.stats_dictionary['Current Health'] -= damage
-                situation = self.player.Name + ' attacks ' + self.enemy.Name + ' for ' + str(full_damage) + ' attack, but ' + self.enemy.Name + ' defended for ' + str(full_defend)
+                situation += self.player.Name + ' attacks ' + self.enemy.Name + ' for ' + str(full_damage) + ' attack, but ' + self.enemy.Name + ' defended for ' + str(full_defend)
             else:
-                situation = self.enemy.Name + ' defended all of ' + self.player.Name + "'s damage"
+                situation += self.enemy.Name + ' defended all of ' + self.player.Name + "'s damage"
         elif enemy_decisions[0] == 'Enemy Poweredup':
             self.enemy.stats_dictionary['Current Health'] -= full_damage
             self.enemy.enemyPowerUp()
-            situation = self.player.Name + ' attacks ' + self.enemy.Name + ' for ' + str(
+            situation += self.player.Name + ' attacks ' + self.enemy.Name + ' for ' + str(
                 full_damage
             ) + ' attack, while ' + self.enemy.Name + ' powers up'
 
@@ -417,6 +418,8 @@ class Dragon(BossArena):
             situation += self.enemy.Name + ' breathes a wave of fire onto ' + self.player.Name + '\n' + self.player.Name + ' is burned for ' + str(self.enemy.AbilityDuration) + ' turns'
             self.burn_duration = self.turn + self.enemy.AbilityDuration
             self.enemy_off_cooldown = self.turn + self.enemy.AbilityCooldown
+            return situation 
+
 
         elif enemy_decisions[0] == 'Enemy Attacked':
             enemy_attack = self.enemy.enemyAttack()
@@ -458,6 +461,7 @@ class Dragon(BossArena):
             situation += self.enemy.Name + ' breathes a wave of fire onto ' + self.player.Name + '\n' + self.player.Name + ' is burned for ' + str(self.enemy.AbilityDuration) + ' turns'
             self.burn_duration = self.turn + self.enemy.AbilityDuration
             self.enemy_off_cooldown = self.turn + self.enemy.AbilityCooldown
+            return situation 
 
         if petsummary and enemy_decisions[0] != 'Enemy Special':
             situation += petsummary[0] 
@@ -465,12 +469,12 @@ class Dragon(BossArena):
             enemy_attack = self.enemy.enemyAttack()
             enemy_full_damage = sum(list(enemy_attack.values()))
             self.player.stats_dictionary['Current Health'] -= enemy_full_damage
-            situation = self.enemy.Name + ' attacked ' + self.player.Name + ' for ' + str(enemy_full_damage) + ', while ' + self.player.Name + ' powered up'
+            situation += self.enemy.Name + ' attacked ' + self.player.Name + ' for ' + str(enemy_full_damage) + ', while ' + self.player.Name + ' powered up'
         elif enemy_decisions[0] == 'Enemy Defended':
-            situation = self.player.Name + ' powered up while ' + self.enemy.Name + ' defended'
+            situation += self.player.Name + ' powered up while ' + self.enemy.Name + ' defended'
         elif enemy_decisions[0] == 'Enemy Poweredup':
             buffs_enemy = self.enemy.enemyPowerUp()
-            situation = self.player.Name + ' and ' + self.enemy.Name + ' powered up'
+            situation += self.player.Name + ' and ' + self.enemy.Name + ' powered up'
         self.turn += 1
         if self.off_cooldown > self.turn:
             situation += '\nSpecial Ability is On Cooldown'
@@ -496,17 +500,17 @@ class Lich(BossArena):
         enemy_attack = self.enemy.enemyAttack()
         enemy_full_damage = sum(list(enemy_attack.values()))
         situation = ''
-
-        if self.enemy.AbilityDamage == 0:
-            situation += self.player.Name + ' has been cursed! They have fainted'
-            return situation
-        elif self.turn <= self.enemy_off_cooldown:
-            situation += self.player.Name + ' has ' + str(self.enemy.AbilityDamage) + ' until they faint\n'
     
         if enemy_decisions[0] == 'Enemy Special':
             self.enemy.AbilityDamage -= 1
-            situation += self.enemy.Name + ' curses ' + self.player.Name + '\n' + self.player.Name + ' has ' + str(self.enemy.AbilityDamage) + ' turns until they faint'
+            situation += self.enemy.Name + ' curses ' + self.player.Name + '\n' + self.player.Name + ' has ' + str(self.enemy.AbilityDamage) + ' turns until they faint\n'
             self.enemy_off_cooldown = self.turn + self.enemy.AbilityCooldown
+            return situation 
+
+        if self.enemy.AbilityDamage == 0:
+            situation += self.player.Name + ' has been cursed! They have fainted'
+            self.player.stats_dictionary['Current Health'] = 0
+            return situation
 
         elif enemy_decisions[0] == 'Enemy Attacked':
             if self.player.stats_dictionary['Attack Speed'] > self.enemy.stats_dictionary['Attack Speed']:
@@ -552,13 +556,13 @@ class Lich(BossArena):
             damage = player_attack['Attack'] - enemy_defense['Defense'] + player_attack['Magic Attack'] - enemy_defense['Magic Defense']
             if damage > 0:
                 self.enemy.stats_dictionary['Current Health'] -= damage
-                situation = self.player.Name + ' attacks ' + self.enemy.Name + ' for ' + str(full_damage) + ' attack, but ' + self.enemy.Name + ' defended for ' + str(full_defend)
+                situation += self.player.Name + ' attacks ' + self.enemy.Name + ' for ' + str(full_damage) + ' attack, but ' + self.enemy.Name + ' defended for ' + str(full_defend)
             else:
-                situation = self.enemy.Name + ' defended all of ' + self.player.Name + "'s damage"
+                situation += self.enemy.Name + ' defended all of ' + self.player.Name + "'s damage"
         elif enemy_decisions[0] == 'Enemy Poweredup':
             self.enemy.stats_dictionary['Current Health'] -= full_damage
             self.enemy.enemyPowerUp()
-            situation = self.player.Name + ' attacks ' + self.enemy.Name + ' for ' + str(
+            situation += self.player.Name + ' attacks ' + self.enemy.Name + ' for ' + str(
                 full_damage
             ) + ' attack, while ' + self.enemy.Name + ' powers up'
 
@@ -576,16 +580,16 @@ class Lich(BossArena):
         petsummary = self.petDefend()
         situation = ''
 
-        if self.enemy.AbilityDamage == 0:
-            situation += self.player.Name + ' has been cursed! They have fainted'
-            return situation
-        elif self.turn <= self.enemy_off_cooldown:
-            situation += self.player.Name + ' has ' + str(self.enemy.AbilityDamage) + ' until they faint\n'
-    
         if enemy_decisions[0] == 'Enemy Special':
             self.enemy.AbilityDamage -= 1
-            situation += self.enemy.Name + ' curses ' + self.player.Name + '\n' + self.player.Name + ' has ' + str(self.enemy.AbilityDamage) + ' turns until they faint'
+            situation += self.enemy.Name + ' curses ' + self.player.Name + '\n' + self.player.Name + ' has ' + str(self.enemy.AbilityDamage) + ' turns until they faint\n'
             self.enemy_off_cooldown = self.turn + self.enemy.AbilityCooldown
+            return situation 
+
+        if self.enemy.AbilityDamage == 0:
+            situation += self.player.Name + ' has been cursed! They have fainted'
+            self.player.stats_dictionary['Current Health'] = 0
+            return situation
 
         elif enemy_decisions[0] == 'Enemy Attacked':
             enemy_attack = self.enemy.enemyAttack()
@@ -617,16 +621,16 @@ class Lich(BossArena):
         petsummary = self.petPowerUp()
         
         
-        if self.enemy.AbilityDamage == 0:
-            situation += self.player.Name + ' has been cursed! They have fainted'
-            return situation
-        elif self.turn <= self.enemy_off_cooldown:
-            situation += self.player.Name + ' has ' + str(self.enemy.AbilityDamage) + ' until they faint\n'
-    
         if enemy_decisions[0] == 'Enemy Special':
             self.enemy.AbilityDamage -= 1
-            situation += self.enemy.Name + ' curses ' + self.player.Name + '\n' + self.player.Name + ' has ' + str(self.enemy.AbilityDamage) + ' turns until they faint'
+            situation += self.enemy.Name + ' curses ' + self.player.Name + '\n' + self.player.Name + ' has ' + str(self.enemy.AbilityDamage) + ' turns until they faint\n'
             self.enemy_off_cooldown = self.turn + self.enemy.AbilityCooldown
+            return situation 
+
+        if self.enemy.AbilityDamage == 0:
+            situation += self.player.Name + ' has been cursed! They have fainted'
+            self.player.stats_dictionary['Current Health'] = 0
+            return situation
             
         if petsummary and enemy_decisions[0] != 'Enemy Special':
             situation += petsummary[0] 
@@ -634,12 +638,12 @@ class Lich(BossArena):
             enemy_attack = self.enemy.enemyAttack()
             enemy_full_damage = sum(list(enemy_attack.values()))
             self.player.stats_dictionary['Current Health'] -= enemy_full_damage
-            situation = self.enemy.Name + ' attacked ' + self.player.Name + ' for ' + str(enemy_full_damage) + ', while ' + self.player.Name + ' powered up'
+            situation += self.enemy.Name + ' attacked ' + self.player.Name + ' for ' + str(enemy_full_damage) + ', while ' + self.player.Name + ' powered up'
         elif enemy_decisions[0] == 'Enemy Defended':
-            situation = self.player.Name + ' powered up while ' + self.enemy.Name + ' defended'
+            situation += self.player.Name + ' powered up while ' + self.enemy.Name + ' defended'
         elif enemy_decisions[0] == 'Enemy Poweredup':
             buffs_enemy = self.enemy.enemyPowerUp()
-            situation = self.player.Name + ' and ' + self.enemy.Name + ' powered up'
+            situation += self.player.Name + ' and ' + self.enemy.Name + ' powered up'
         self.turn += 1
         if self.off_cooldown > self.turn:
             situation += '\nSpecial Ability is On Cooldown'
@@ -670,6 +674,7 @@ class Kraken(BossArena):
             self.enemy.stats_dictionary['Current Health'] += self.enemy.AbilityDamage
             situation += self.enemy.Name + ' regenerates ' + str(self.enemy.AbilityDamage) + ' health'
             self.enemy_off_cooldown = self.turn + self.enemy.AbilityCooldown
+            return situation 
 
         elif enemy_decisions[0] == 'Enemy Attacked':
             if self.player.stats_dictionary['Attack Speed'] > self.enemy.stats_dictionary['Attack Speed']:
@@ -715,13 +720,13 @@ class Kraken(BossArena):
             damage = player_attack['Attack'] - enemy_defense['Defense'] + player_attack['Magic Attack'] - enemy_defense['Magic Defense']
             if damage > 0:
                 self.enemy.stats_dictionary['Current Health'] -= damage
-                situation = self.player.Name + ' attacks ' + self.enemy.Name + ' for ' + str(full_damage) + ' attack, but ' + self.enemy.Name + ' defended for ' + str(full_defend)
+                situation += self.player.Name + ' attacks ' + self.enemy.Name + ' for ' + str(full_damage) + ' attack, but ' + self.enemy.Name + ' defended for ' + str(full_defend)
             else:
-                situation = self.enemy.Name + ' defended all of ' + self.player.Name + "'s damage"
+                situation += self.enemy.Name + ' defended all of ' + self.player.Name + "'s damage"
         elif enemy_decisions[0] == 'Enemy Poweredup':
             self.enemy.stats_dictionary['Current Health'] -= full_damage
             self.enemy.enemyPowerUp()
-            situation = self.player.Name + ' attacks ' + self.enemy.Name + ' for ' + str(
+            situation += self.player.Name + ' attacks ' + self.enemy.Name + ' for ' + str(
                 full_damage
             ) + ' attack, while ' + self.enemy.Name + ' powers up'
 
@@ -743,6 +748,7 @@ class Kraken(BossArena):
             self.enemy.stats_dictionary['Current Health'] += self.enemy.AbilityDamage
             situation += self.enemy.Name + ' regenerates ' + str(self.enemy.AbilityDamage) + ' health'
             self.enemy_off_cooldown = self.turn + self.enemy.AbilityCooldown
+            return situation 
 
         elif enemy_decisions[0] == 'Enemy Attacked':
             enemy_attack = self.enemy.enemyAttack()
@@ -778,6 +784,7 @@ class Kraken(BossArena):
             self.enemy.stats_dictionary['Current Health'] += self.enemy.AbilityDamage
             situation += self.enemy.Name + ' regenerates ' + str(self.enemy.AbilityDamage) + ' health'
             self.enemy_off_cooldown = self.turn + self.enemy.AbilityCooldown
+            return situation 
             
         if petsummary and enemy_decisions[0] != 'Enemy Special':
             situation += petsummary[0] 
@@ -785,12 +792,12 @@ class Kraken(BossArena):
             enemy_attack = self.enemy.enemyAttack()
             enemy_full_damage = sum(list(enemy_attack.values()))
             self.player.stats_dictionary['Current Health'] -= enemy_full_damage
-            situation = self.enemy.Name + ' attacked ' + self.player.Name + ' for ' + str(enemy_full_damage) + ', while ' + self.player.Name + ' powered up'
+            situation += self.enemy.Name + ' attacked ' + self.player.Name + ' for ' + str(enemy_full_damage) + ', while ' + self.player.Name + ' powered up'
         elif enemy_decisions[0] == 'Enemy Defended':
-            situation = self.player.Name + ' powered up while ' + self.enemy.Name + ' defended'
+            situation += self.player.Name + ' powered up while ' + self.enemy.Name + ' defended'
         elif enemy_decisions[0] == 'Enemy Poweredup':
             buffs_enemy = self.enemy.enemyPowerUp()
-            situation = self.player.Name + ' and ' + self.enemy.Name + ' powered up'
+            situation += self.player.Name + ' and ' + self.enemy.Name + ' powered up'
         self.turn += 1
         if self.off_cooldown > self.turn:
             situation += '\nSpecial Ability is On Cooldown'

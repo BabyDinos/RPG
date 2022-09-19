@@ -30,3 +30,10 @@ class MythicalLootBox(lootbox):
     def __init__(self):
         self.items = ['Mythical Long Sword','Mythical Staff','Mythical Armor','Mythical Robe','Griffin','Sphinx','Unicorn']
         self.probabilities = [1,1,1,1,1,1,1]
+
+class ChallengerLootBox(lootbox):
+
+    def __init__(self):
+        self.items = ['Dragon Katana','Dragon Crown','Baby Dragon','Lich Spellbook','Lich Cloak','Lich Apprentice','Tentacle Sai','Sucker Armor','Giant Squid','Giant Troll Club','Giant Troll T-Shirt',
+        'Mini Troll']
+        self.probabilities = [1,1,1,1,1,1,1,1,1,1,1,1]

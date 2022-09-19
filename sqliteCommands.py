@@ -1,8 +1,9 @@
 from sqlitedict import SqliteDict
 
 
-class sqlCommands:
+class sqldictCommands:
 
+    @staticmethod
     def save(key, value, database):
         if database == 'player':
             cache_file = 'player.sqlite'
@@ -13,6 +14,7 @@ class sqlCommands:
         except Exception as ex:
             print("Error during storing data: ", ex) 
 
+    @staticmethod
     def load(key, database):
         if database == 'player':
             cache_file = 'player.sqlite'
@@ -25,7 +27,8 @@ class sqlCommands:
             mydict.close()
             print("Error during loading data: ", ex) 
             return False
-
+            
+    @staticmethod
     def delete(key, database):
         if database == 'player':
             cache_file = 'player.sqlite'
@@ -36,3 +39,6 @@ class sqlCommands:
         except Exception as ex:
             print("Error during deletion: ", ex)
 
+class sqliteCommands:
+    #create sqlite3 database to store 
+    pass

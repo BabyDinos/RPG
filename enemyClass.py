@@ -177,7 +177,7 @@ class GoldenTreant(Enemy):
 class Boss(Enemy):
     def __init__(self, name, player):
         Enemy.__init__(self, name, player)
-        self.stats_dictionary = {'Max Health':random.randint(10*player.Level,15*player.Level),
+        self.stats_dictionary = {'Max Health':random.randint(15*player.Level,20*player.Level),
                         'Attack':random.randint(2*player.Level,5*player.Level),
                         'Magic Attack':random.randint(3*player.Level,4*player.Level),
                         'Defense':random.randint(2*player.Level,5*player.Level),
