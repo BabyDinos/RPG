@@ -1,5 +1,5 @@
 from sqlitedict import SqliteDict
-
+import sqlite3
 
 class sqldictCommands:
 
@@ -41,4 +41,12 @@ class sqldictCommands:
 
 class sqliteCommands:
     #create sqlite3 database to store 
-    pass
+    @staticmethod
+    def add(entry, database):
+        connection = sqlite3.connect(database + '.db')
+        cursor = connection.cursor()
+        print("INSERT INTO {} VALUES ({},{},{},{})".format(database, *entry))
+        cursor.execute("INSERT INTO {} VALUES ({},{},{},{})".format(database, *entry))
+        pass
+
+sqliteCommands.add(['Gold','6404',100,100], 'buyorder')

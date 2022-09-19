@@ -16,8 +16,20 @@ testServerID = int(os.environ['testServerID'])
 @bot.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(bot))
-    if not os.path.exists('player.sqlite'):
-        SqliteDict('player.sqlite')
+    sqlitedict_list = ['player.sqlite','playerorder.sqlite']
+    sqlite3_list = ['buyorder.db','sellorder.db']
+    for sqlitedict in sqlitedict_list:
+      if not os.path.exists(sqlitedict):
+          SqliteDict(sqlitedict)
+    for database in sqlite3_list:
+      connection = sqlite3.connect(database)
+      c = connection.cursor()
+      c.execute(f"""CREATE TABLE {database[:-3]} (
+                Item text,
+                ID integer,
+                Price integer,
+                Quantity integer
+                ) """)
 
 for filename in os.listdir("./cogs"):
     if filename.endswith(".py"):
