@@ -61,6 +61,9 @@ class AccountCommands(commands.Cog):
                                     playerClass.Warrior(
                                         username),
                                     database='player')
+                sqldictCommands.save(id,
+                                {'Buy':[],'Sell':[]},
+                                database='playerorder')                  
                 embed = nextcord.Embed(
                     title='Thanks for Registering ' +
                     username,
@@ -78,6 +81,9 @@ class AccountCommands(commands.Cog):
                 sqldictCommands.save(id,
                                     playerClass.Mage(username),
                                     database='player')
+                sqldictCommands.save(id,
+                                {'Buy':[],'Sell':[]},
+                                database='playerorder')     
                 embed = nextcord.Embed(
                     title='Thanks for Registering ' +
                     username,
