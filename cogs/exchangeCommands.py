@@ -19,7 +19,7 @@ class excCommands(commands.Cog):
         return [sqliteCommands.sqldictCommands.load(id, database='player'), id]
 
     @nextcord.slash_command(guild_ids = [testServerID], description = 'Go adventuring for loot, exp, and gold')
-    async def buy(self, interaction: Interaction, item:str, price:int, quantity:int):
+    async def buy(self, interaction: Interaction, item:str, action:str, price:int, quantity:int):
         arr = self.getPlayer(interaction)
         player = arr[0]
         id = arr[1]

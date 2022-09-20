@@ -1,6 +1,5 @@
 # This is the place where players will directly interact with 
-import sqlite3
-import sqliteCommands
+import matchingengine
 
 class Port:
 
@@ -12,9 +11,12 @@ class Port:
 
     #create sqlite3 database to store 
     @staticmethod
-    def buy(serial_number, player_id, entry:tuple, database):
+    def order(player_id, serial_number, entry:tuple, database):
         try:
-            pass
+            feedback = matchingengine.MatchingEngine.send_order(player_id, serial_number, entry)
+            if feedback == [player_id, serial_number, entry]:
+                Port.serial_number_increase(Port)
+                return True
         except:
             return False
 

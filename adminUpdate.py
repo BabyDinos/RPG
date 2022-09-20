@@ -23,8 +23,8 @@ with SqliteDict('player.sqlite') as mydict:
             amount_list.append(player.inventory.loc[index,'Amount'])
         newplayer.inventory = playerClass.Player.updateItem(newplayer, item_list, amount_list)
         mydict[key] = newplayer
-        sqliteCommands.sqldictCommands.save(key, {'Buy':[],'Sell':[]}, database= 'playerorder')
-    #mydict.commit()
+        sqliteCommands.sqldictCommands.save(key, [], database= 'playerorder')
+    mydict.commit()
 
 # with SqliteDict('playerorder.sqlite') as mydict:
 #     for key, value in mydict.items():
