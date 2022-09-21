@@ -24,9 +24,9 @@ with SqliteDict('player.sqlite') as mydict:
         newplayer.inventory = playerClass.Player.updateItem(newplayer, item_list, amount_list)
         mydict[key] = newplayer
         sqliteCommands.sqldictCommands.save(key, [], database= 'playerorder')
-    mydict.commit()
+    #mydict.commit()
 
-# with SqliteDict('playerorder.sqlite') as mydict:
-#     for key, value in mydict.items():
-#         print(mydict[key])
-
+with SqliteDict('playerorder.sqlite') as mydict:
+    for key, value in mydict.items():
+        print(key)
+        print(mydict[key])

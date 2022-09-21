@@ -11,12 +11,12 @@ class Port:
 
     #create sqlite3 database to store 
     @staticmethod
-    def order(player_id, serial_number, entry:tuple, database):
+    def order(player_id, serial_number, entry:tuple):
         try:
             feedback = matchingengine.MatchingEngine.send_order(player_id, serial_number, entry)
             if feedback == [player_id, serial_number, entry]:
-                Port.serial_number_increase(Port)
-                return True
+                Port.serial_number_increase()
+                return feedback
         except:
             return False
 

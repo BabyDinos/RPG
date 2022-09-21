@@ -24,7 +24,7 @@ async def on_ready():
     for database in sqlite3_list:
       connection = sqlite3.connect(database)
       c = connection.cursor()
-      c.execute(f"""CREATE TABLE {database[:-3]} (
+      c.execute(f"""CREATE TABLE IF NOT EXISTS {database[:-3]} (
                 ID INTEGER PRIMARY KEY,
                 Item TEXT,
                 Action TEXT,

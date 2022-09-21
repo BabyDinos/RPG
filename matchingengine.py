@@ -20,7 +20,7 @@ class MatchingEngine:
         if serial_number == MatchingEngine.port_serial_number:
             try:
                 sqliteCommands.sqlite3Commands.add(player_id, serial_number, entry)
-                MatchingEngine.serial_number_increase(MatchingEngine)
+                MatchingEngine.serial_number_increase()
                 return [player_id, serial_number, entry]
             except:
                 print('Error in saving order')
