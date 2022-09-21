@@ -23,7 +23,7 @@ class excCommands(commands.Cog):
     @nextcord.slash_command(guild_ids = [testServerID], description = 'Submit an order')
     async def order(self, interaction: Interaction, item:str, price:int, quantity:int, 
         action: str = SlashOption(
-        name = 'ordertype', choices={"buy":'Buy', "sell":'Sell', 'cancel':'Cancel'}
+        name = 'ordertype', choices={"buy":'Buy', "sell":'Sell'}
     )
     ):
         arr = self.getPlayer(interaction)
@@ -48,7 +48,7 @@ class excCommands(commands.Cog):
                         return
                 feedback = port.Port.order(id, port.Port.serial_number, (item, action, price, quantity))
                 if feedback:
-                    await interaction.response.send_message('Your order has been successfully placed\n{}'.format(str(port.Port.serial_number)), ephemeral = True)
+                    await interaction.response.send_message('Your order has been successfully placed', ephemeral = True)
             except:
                 await interaction.response.send_message('Error in placing order', ephemeral = True)
 
@@ -65,14 +65,14 @@ class excCommands(commands.Cog):
                 embed = nextcord.Embed(title = 'Orders', description = player.Name)
                 for order in orderlist:
                     order_components = order.split('-')
-                    embed.add_field(name = order_components[2], value = order_components[3] + order_components[5] + '@' + order_components[4] + '\n' + order_components)
+                    embed.add_field(name = order_components[2], value = order_components[3] + order_components[5] + '@' + order_components[4] + '\n' + order)
 
                 await interaction.response.send_message(embed = embed, ephemeral = True)
             except:
                 await interaction.response.send_message('Failed to bring up order list', ephemeral=True)
 
     @nextcord.slash_command(guild_ids = [testServerID], description = 'Cancel an order')
-    async def order(self, interaction: Interaction, orderid:str):
+    async def cancelorder(self, interaction: Interaction, orderid:str):
         arr = self.getPlayer(interaction)
         player = arr[0]
         id = arr[1]
@@ -80,10 +80,9 @@ class excCommands(commands.Cog):
             await interaction.response.send_message('You are not registered', ephemeral = True)
         else:
             try:
-                orderlist = sqliteCommands.sqldictCommands.load(id, database='playerorder')
-                orderlist.remove(orderid)
-                sqliteCommands.sqldictCommands.save(id, orderlist, database = 'playerorder')
-                await interaction.response.send_message('Order ' + orderid + ' has been cancelled', ephemeral = True)
+                feedback = port.Port.cancelorder(id, port.Port.serial_number, orderid)
+                if feedback:
+                    await interaction.response.send_message('Order ' + orderid + ' has been cancelled', ephemeral = True)
             except:
                 await interaction.response.send_message('Order does not exist', ephemeral=True)
 

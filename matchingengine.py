@@ -21,6 +21,17 @@ class MatchingEngine:
             try:
                 sqliteCommands.sqlite3Commands.add(player_id, serial_number, entry)
                 MatchingEngine.serial_number_increase()
-                return [player_id, serial_number, entry]
+                return serial_number
             except:
-                print('Error in saving order')
+                print('Error in Saving order')
+
+    @staticmethod
+    def cancel_order(player_id, serial_number, orderid):
+        if serial_number == MatchingEngine.port_serial_number:
+            try:
+                sqliteCommands.sqlite3Commands.remove(player_id, orderid)
+                MatchingEngine.serial_number_increase()
+                return serial_number
+            except:
+                print('Error in Cancelling Order')
+

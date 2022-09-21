@@ -14,16 +14,19 @@ class Port:
     def order(player_id, serial_number, entry:tuple):
         try:
             feedback = matchingengine.MatchingEngine.send_order(player_id, serial_number, entry)
-            if feedback == [player_id, serial_number, entry]:
+            if feedback == serial_number:
                 Port.serial_number_increase()
                 return feedback
         except:
             return False
 
     @staticmethod
-    def remove(orderid, database):
+    def cancelorder(player_id, serial_number, orderid):
         try:
-            pass
+            feedback = matchingengine.MatchingEngine.cancel_order(player_id, serial_number, orderid)
+            if feedback == serial_number:
+                Port.serial_number_increase()
+                return feedback
         except:
             return False
 
