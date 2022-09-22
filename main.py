@@ -4,6 +4,7 @@ import os
 from sqlitedict import SqliteDict
 from webserver import keep_alive
 import sqlite3
+import marketdata
 
 intents = nextcord.Intents.default()
 intents.members = True
@@ -12,6 +13,9 @@ intents.messages = True
 bot = commands.Bot(intents=intents)
 
 testServerID = int(os.environ['testServerID'])
+
+# Import pandas dataframe copy of sql dataframe
+marketdata.MarketData.startup()
 
 @bot.event
 async def on_ready():
@@ -26,6 +30,7 @@ async def on_ready():
       c = connection.cursor()
       c.execute(f"""CREATE TABLE IF NOT EXISTS {database[:-3]} (
                 ID INTEGER PRIMARY KEY,
+                PlayerID TEXT,
                 Item TEXT,
                 Action TEXT,
                 Price INTEGER,

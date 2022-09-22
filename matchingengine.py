@@ -19,7 +19,7 @@ class MatchingEngine:
     def send_order(player_id, serial_number, entry:tuple):
         if serial_number == MatchingEngine.port_serial_number:
             try:
-                sqliteCommands.sqlite3Commands.add(player_id, serial_number, entry)
+                sqliteCommands.sqlite3Commands.add(player_id, entry)
                 MatchingEngine.serial_number_increase()
                 return serial_number
             except:
