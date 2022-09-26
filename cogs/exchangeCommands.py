@@ -2,11 +2,13 @@ import os
 from nextcord.ext import commands
 import nextcord
 from nextcord import Interaction, SlashOption
+from nextcord.ui import Button, View
 import sqliteCommands
 import sys
 import pandas as pd
 sys.path.insert(1, 'C:/Users/School/OneDrive - The City University of New York/Documents/GitHub/RPG')
 import port 
+import marketdata
 
 testServerID = int(os.environ['testServerID'])
 
@@ -86,6 +88,100 @@ class excCommands(commands.Cog):
             except:
                 await interaction.response.send_message('Order does not exist', ephemeral=True)
 
+    @nextcord.slash_command(guild_ids=[testServerID], description = 'See market orders')
+    async def market(self, interaction:Interaction):
+        arr = self.getPlayer(interaction)
+        player = arr[0]
+        id = arr[1]
+        if not player:
+            await interaction.response.send_message('You are not registered', ephemeral = True)
+        else:
+            try:
+                market_data = marketdata.MarketData.display()
+                items_on_each_page = 10
+                total_pages = max((len(market_data) // items_on_each_page), 1)
+                currentPage = 0
+
+                def createEmbed(pageNum=0, inline=False):
+
+                    pageNum = pageNum % total_pages
+                    embed = nextcord.Embed(title = 'BID | Market | ASK')
+                    pointer = items_on_each_page  * pageNum
+                    upper_bound = min(len(market_data), (items_on_each_page * (pageNum + 1)))
+                    while pointer <= upper_bound-1:
+                        entry = ''
+                        name = market_data[pointer][0]
+                        buy_value_dict = market_data[pointer][1][['Action','Price','Quantity']].to_dict(orient = 'records')
+                        sell_value_dict = market_data[pointer][2][['Action','Price','Quantity']].to_dict(orient = 'records')
+                        if buy_value_dict == []:
+                            entry += '  0 🪙  | '
+                        else:
+                            entry += '  ' + str(buy_value_dict[0]['Price']) + ' 🪙  | '
+                        entry += name
+                        if sell_value_dict == []:
+                            entry += ' |  0 🪙'
+                        else:
+                            entry += ' |  ' + str(sell_value_dict[0]['Price']) + ' 🪙'
+                        embed.add_field(name=entry, value='\u200b', inline=inline)
+                        pointer += 1
+                    embed.set_footer(text=f'Page {pageNum+1} of {total_pages}')
+                        
+                    return embed
+
+                async def next_callback(interaction):
+                    nonlocal currentPage
+                    currentPage += 1
+
+                    await interaction.response.edit_message(embed=createEmbed(pageNum=currentPage),
+                                        view=myview)
+                    
+
+                async def previous_callback(interaction):
+                    nonlocal currentPage
+                    currentPage -= 1
+
+                    await interaction.response.edit_message(embed=createEmbed(pageNum=currentPage),
+                                        view=myview)
+                    
+
+                async def fast_next_callback(interaction):
+                    nonlocal currentPage
+                    currentPage = total_pages 
+
+                    await interaction.response.edit_message(embed=createEmbed(pageNum=currentPage),
+                                        view=myview)
+                    
+
+                async def fast_previous_callback(interaction):
+                    nonlocal currentPage
+                    currentPage = 0
+
+                    await interaction.response.edit_message(embed=createEmbed(pageNum=currentPage),
+                                        view=myview)
+                    
+
+                nextButton = Button(label='>', style=nextcord.ButtonStyle.blurple)
+                nextButton.callback = next_callback
+                previousButton = Button(label='<',
+                                        style=nextcord.ButtonStyle.blurple)
+                previousButton.callback = previous_callback
+                fastNextButton = Button(label='>>',
+                                        style=nextcord.ButtonStyle.blurple)
+                fastNextButton.callback = fast_next_callback
+                fastPreviousButton = Button(label='<<',
+                                            style=nextcord.ButtonStyle.blurple)
+                fastPreviousButton.callback = fast_previous_callback
+
+                myview = View(timeout=120)
+                myview.add_item(fastPreviousButton)
+                myview.add_item(previousButton)
+                myview.add_item(nextButton)
+                myview.add_item(fastNextButton)
+
+
+                await interaction.response.send_message(embed = createEmbed(pageNum = currentPage), view = myview, ephemeral = True)
+            except:
+                await interaction.response.send_message('Failed to bring up market', ephemeral=True)
     # command to submit buy order - port
     # command to submit sell order - port
     # command to cancel order - port

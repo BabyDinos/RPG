@@ -44,13 +44,14 @@ class sqlite3Commands:
         connection = sqlite3.connect(database + '.db')
         cursor = connection.cursor()
         cursor.execute("INSERT INTO {} (PlayerID, Item, Action, Price, Quantity) VALUES ({},?,?,?,?)".format(database, player_id), entry)
-        lastid = cursor.lastrowid
+        lastid = str(cursor.lastrowid)
         connection.commit()
         str_tuple = '-'.join([str(x) for x in entry])
-        order_id = '-'.join([str(lastid), player_id, str_tuple])
+        order_id = '-'.join([lastid, player_id, str_tuple])
         order_list = sqldictCommands.load(player_id, database='playerorder')
         order_list.append(order_id)
         sqldictCommands.save(player_id, order_list, database='playerorder')
+        return lastid
 
     @staticmethod
     def remove(player_id, orderid:str, database = 'matchingengine'):

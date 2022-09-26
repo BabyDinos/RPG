@@ -4,6 +4,7 @@
 # Save orders in market data dataframe
 import sqlite3
 import sqliteCommands
+import marketdata
 
 
 class MatchingEngine:
@@ -19,7 +20,8 @@ class MatchingEngine:
     def send_order(player_id, serial_number, entry:tuple):
         if serial_number == MatchingEngine.port_serial_number:
             try:
-                sqliteCommands.sqlite3Commands.add(player_id, entry)
+                lastid = sqliteCommands.sqlite3Commands.add(player_id, entry)
+                marketdata.MarketData.add(lastid, player_id, entry)
                 MatchingEngine.serial_number_increase()
                 return serial_number
             except:
@@ -30,8 +32,14 @@ class MatchingEngine:
         if serial_number == MatchingEngine.port_serial_number:
             try:
                 sqliteCommands.sqlite3Commands.remove(player_id, orderid)
+                marketdata.MarketData.remove(player_id, orderid)
                 MatchingEngine.serial_number_increase()
                 return serial_number
             except:
                 print('Error in Cancelling Order')
+    
+    # Price Time Priority
+    # Price Quantity Time Priority (PRO-RATA) Buyers will get proportion of the share in comparison to others at the same price
+    # TOP (usually first) if you are willing to show a mininmum of x quantity, you will be allocated the entire top quantity   
+    # Market Makers 
 
