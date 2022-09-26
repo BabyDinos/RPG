@@ -135,7 +135,6 @@ class excCommands(commands.Cog):
                     await interaction.response.edit_message(embed=createEmbed(pageNum=currentPage),
                                         view=myview)
                     
-
                 async def previous_callback(interaction):
                     nonlocal currentPage
                     currentPage -= 1
@@ -143,7 +142,6 @@ class excCommands(commands.Cog):
                     await interaction.response.edit_message(embed=createEmbed(pageNum=currentPage),
                                         view=myview)
                     
-
                 async def fast_next_callback(interaction):
                     nonlocal currentPage
                     currentPage = total_pages 
@@ -151,7 +149,6 @@ class excCommands(commands.Cog):
                     await interaction.response.edit_message(embed=createEmbed(pageNum=currentPage),
                                         view=myview)
                     
-
                 async def fast_previous_callback(interaction):
                     nonlocal currentPage
                     currentPage = 0
@@ -159,7 +156,6 @@ class excCommands(commands.Cog):
                     await interaction.response.edit_message(embed=createEmbed(pageNum=currentPage),
                                         view=myview)
                     
-
                 nextButton = Button(label='>', style=nextcord.ButtonStyle.blurple)
                 nextButton.callback = next_callback
                 previousButton = Button(label='<',
@@ -177,7 +173,6 @@ class excCommands(commands.Cog):
                 myview.add_item(previousButton)
                 myview.add_item(nextButton)
                 myview.add_item(fastNextButton)
-
 
                 await interaction.response.send_message(embed = createEmbed(pageNum = currentPage), view = myview, ephemeral = True)
             except:

@@ -14,9 +14,6 @@ bot = commands.Bot(intents=intents)
 
 testServerID = int(os.environ['testServerID'])
 
-# Import pandas dataframe copy of sql dataframe
-marketdata.MarketData.startup()
-
 @bot.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(bot))
@@ -36,6 +33,8 @@ async def on_ready():
                 Price INTEGER,
                 Quantity INTEGER
                 ) """)
+    # Import pandas dataframe copy of sql dataframe
+    marketdata.MarketData.startup()
 
 for filename in os.listdir("./cogs"):
     if filename.endswith(".py"):

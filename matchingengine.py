@@ -32,7 +32,7 @@ class MatchingEngine:
         if serial_number == MatchingEngine.port_serial_number:
             try:
                 sqliteCommands.sqlite3Commands.remove(player_id, orderid)
-                marketdata.MarketData.remove(player_id, orderid)
+                marketdata.MarketData.remove(orderid)
                 MatchingEngine.serial_number_increase()
                 return serial_number
             except:
