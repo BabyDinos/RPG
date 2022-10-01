@@ -40,7 +40,6 @@ class sqlite3Commands:
 
     @staticmethod
     def add(player_id, entry:tuple, database = 'matchingengine'):
-
         connection = sqlite3.connect(database + '.db')
         cursor = connection.cursor()
         cursor.execute("INSERT INTO {} (PlayerID, Item, Action, Price, Quantity) VALUES ({},?,?,?,?)".format(database, player_id), entry)
@@ -65,3 +64,16 @@ class sqlite3Commands:
         order_list.remove(orderid)
         sqldictCommands.save(player_id, order_list, database='playerorder')
 
+    @staticmethod
+    def edit(player_id, entry:list, database = 'matchingengine'):
+        connection = sqlite3.connect(database + '.db')
+        cursor = connection.cursor()
+        entry = [str(x) for x in entry]
+        orderid = '-'.join(entry)
+        sqlinput = [int(entry[5])] + [int(entry[0])]
+        cursor.execute("UPDATE {} SET Quantity = ? WHERE ID = ?".format(database),sqlinput)
+        connection.commit()
+        order_list = sqldictCommands.load(player_id, database='playerorder')
+        index = [index for index, string in enumerate(order_list) if int(string[0]) == sqlinput[1]][0]
+        order_list[index] = orderid
+        sqldictCommands.save(player_id, order_list, database='playerorder')

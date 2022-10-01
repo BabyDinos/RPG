@@ -23,12 +23,20 @@ class MatchingEngine:
                 lastid = sqliteCommands.sqlite3Commands.add(player_id, entry)
                 marketdata.MarketData.add(lastid, player_id, entry)
                 MatchingEngine.serial_number_increase()
+                cancel_order_list, edit_order_list = marketdata.MarketData.match(entry[0])
+                for orderid in cancel_order_list:
+                    player_id = orderid[1]
+                    orderid = '-'.join((str(value) for value in orderid))
+                    sqliteCommands.sqlite3Commands.remove(player_id,orderid)
+                for orderid in edit_order_list:
+                    player_id = orderid[1]
+                    sqliteCommands.sqlite3Commands.edit(player_id, orderid)
                 return serial_number
             except:
                 print('Error in Saving order')
 
     @staticmethod
-    def cancel_order(player_id, serial_number, orderid):
+    def cancel_order(player_id, serial_number, orderid:str):
         if serial_number == MatchingEngine.port_serial_number:
             try:
                 sqliteCommands.sqlite3Commands.remove(player_id, orderid)
@@ -37,6 +45,7 @@ class MatchingEngine:
                 return serial_number
             except:
                 print('Error in Cancelling Order')
+    
     
     # Price Time Priority
     # Price Quantity Time Priority (PRO-RATA) Buyers will get proportion of the share in comparison to others at the same price
