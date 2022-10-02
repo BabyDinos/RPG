@@ -9,6 +9,7 @@ import pandas as pd
 sys.path.insert(1, 'C:/Users/School/OneDrive - The City University of New York/Documents/GitHub/RPG')
 import port 
 import marketdata
+import matchingengine
 
 testServerID = int(os.environ['testServerID'])
 
@@ -21,6 +22,19 @@ class excCommands(commands.Cog):
     def getPlayer(self, interaction):
         id = str(interaction.user).split('#')[-1]
         return [sqliteCommands.sqldictCommands.load(id, database='player'), id]
+
+    @commands.Cog.listener()
+    async def on_interaction(self, interaction: Interaction):
+        if interaction.data['name'] == 'order':
+            cancel_order_list, edit_order_list = marketdata.MarketData.match(matchingengine.MatchingEngine.item)
+            for orderid in cancel_order_list:
+                player_id = orderid[1]
+                orderid = '-'.join((str(value) for value in orderid))
+                sqliteCommands.sqlite3Commands.remove(player_id,orderid)
+            for orderid in edit_order_list:
+                player_id = orderid[1]
+                sqliteCommands.sqlite3Commands.edit(player_id, orderid)
+            print('Matched')
 
     @nextcord.slash_command(guild_ids = [testServerID], description = 'Submit an order')
     async def order(self, interaction: Interaction, item:str, price:int, quantity:int, 

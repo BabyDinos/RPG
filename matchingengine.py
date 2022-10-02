@@ -5,16 +5,22 @@
 import sqlite3
 import sqliteCommands
 import marketdata
+import sys
+import cogs.exchangeCommands
 
 
 class MatchingEngine:
 
     port_serial_number = 1
-
+    item = ''
 
     @classmethod
     def serial_number_increase(cls):
         cls.port_serial_number += 1  
+
+    @classmethod
+    def change_item(cls, new_item):
+        cls.item = new_item
 
     @staticmethod
     def send_order(player_id, serial_number, entry:tuple):
@@ -22,15 +28,8 @@ class MatchingEngine:
             try:
                 lastid = sqliteCommands.sqlite3Commands.add(player_id, entry)
                 marketdata.MarketData.add(lastid, player_id, entry)
+                MatchingEngine.change_item(entry[0])
                 MatchingEngine.serial_number_increase()
-                cancel_order_list, edit_order_list = marketdata.MarketData.match(entry[0])
-                for orderid in cancel_order_list:
-                    player_id = orderid[1]
-                    orderid = '-'.join((str(value) for value in orderid))
-                    sqliteCommands.sqlite3Commands.remove(player_id,orderid)
-                for orderid in edit_order_list:
-                    player_id = orderid[1]
-                    sqliteCommands.sqlite3Commands.edit(player_id, orderid)
                 return serial_number
             except:
                 print('Error in Saving order')
