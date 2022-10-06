@@ -297,7 +297,7 @@ class BossArena(Combat):
     @staticmethod
     def enemySpawn(player):
         enemy_choice = random.choices(['Dragon', 'Lich', 'Kraken'],
-                                        weights=[0, 1 ,0])
+                                        weights=[1, 1 ,1])
         if enemy_choice[0] == 'Dragon':
             enemy = enemyClass.Dragon(name='Dragon', player=player)
         elif enemy_choice[0] == 'Lich':

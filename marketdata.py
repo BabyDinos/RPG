@@ -107,11 +107,13 @@ class MarketData:
         
         edit_order_list = []
         if buy_quantity_changed == True:
+            temp = buy_group_data_frame.head(1).iloc[0].tolist()
             buy_group_data_frame.loc[0,'Quantity'] = buy_quantity
-            edit_order_list.append(buy_group_data_frame.head(1).iloc[0].tolist())
+            edit_order_list.append((temp, buy_group_data_frame.head(1).iloc[0].tolist()))
         if sell_quantity_changed == True:
+            temp = sell_group_data_frame.head(1).iloc[0].tolist()
             sell_group_data_frame.loc[0, 'Quantity'] = sell_quantity
-            edit_order_list.append(sell_group_data_frame.head(1).iloc[0].tolist())
+            edit_order_list.append((temp, sell_group_data_frame.head(1).iloc[0].tolist()))
 
         return cancel_order_list, edit_order_list
 

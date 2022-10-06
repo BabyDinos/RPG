@@ -125,6 +125,8 @@ class comCommands(commands.Cog):
                 combat = combatClass.Dragon(player, enemy, id) 
             elif enemy.Name == 'Lich':
                 combat = combatClass.Lich(player, enemy, id)
+            elif enemy.Name == 'Kraken':
+                combat = combatClass.Kraken(player, enemy, id)
 
             async def attack_callback(interaction):
                 situation = combat.playerAttack()

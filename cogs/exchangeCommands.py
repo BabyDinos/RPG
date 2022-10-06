@@ -26,16 +26,42 @@ class excCommands(commands.Cog):
 
     @commands.Cog.listener()
     async def on_interaction(self, interaction: Interaction):
-        if interaction.data['name'] == 'order':
-            cancel_order_list, edit_order_list = marketdata.MarketData.match(matchingengine.MatchingEngine.item)
-            for orderid in cancel_order_list:
-                player_id = orderid[1]
-                orderid = '-'.join((str(value) for value in orderid))
-                sqliteCommands.sqlite3Commands.remove(player_id,orderid)
-            for orderid in edit_order_list:
-                player_id = orderid[1]
-                sqliteCommands.sqlite3Commands.edit(player_id, orderid)
-            print('Matched')
+        try:
+            if interaction.data['name'] == 'order':
+                cancel_order_list, edit_order_list = marketdata.MarketData.match(matchingengine.MatchingEngine.item)
+                for orderid in cancel_order_list:
+                    player_id = orderid[1]
+                    action = orderid[3]
+                    quantity = orderid[5]
+                    player = sqliteCommands.sqldictCommands.load(player_id, database= 'player')
+                    if action == 'Buy':
+                        item = orderid[2]
+                        player.inventory = playerClass.Player.updateItem(player, [item],[quantity])
+                    elif action == 'Sell':
+                        price = orderid[4]
+                        player.inventory = playerClass.Player.updateItem(player, ['Gold'],[price * quantity])
+                    sqliteCommands.sqldictCommands.save(player_id, player, database = 'player')
+                    orderid = '-'.join((str(value) for value in orderid))
+                    sqliteCommands.sqlite3Commands.remove(player_id,orderid)
+                for orderids in edit_order_list:
+                    original_order = orderids[0]
+                    new_order = orderids[1]
+                    player_id = original_order[1]
+                    action = original_order[3]
+                    quantity = original_order[5] - new_order[5]
+                    player = sqliteCommands.sqldictCommands.load(player_id, database= 'player')
+                    if action == 'Buy':
+                        item = original_order[2]
+                        player.inventory = playerClass.Player.updateItem(player, [item], [quantity])
+                    elif action == 'Sell':
+                        price = original_order[4]
+                        player.inventory = playerClass.Player.updateItem(player, ['Gold'], [price * quantity])
+                    sqliteCommands.sqldictCommands.save(player_id, player, database = 'player')
+                    sqliteCommands.sqlite3Commands.edit(player_id, orderid)
+                print('Matched')
+        except:
+            print('Not the command')
+           
 
     @nextcord.slash_command(guild_ids = [testServerID], description = 'Submit an order')
     async def order(self, interaction: Interaction, item:str, price:int, quantity:int, 
@@ -60,13 +86,13 @@ class excCommands(commands.Cog):
                     if player.inventory.loc[index, 'Amount'] < price*quantity:
                         await interaction.response.send_message('You do not have the neccessary funds', ephemeral = True)
                         return
-                    playerClass.updateItem(player, ['Gold'],[-(price*quantity)])
+                    playerClass.Player.updateItem(player, ['Gold'],[-(price*quantity)])
                 elif action == 'Sell':
                     index = player.inventory.index[player.inventory['Name'] == item].tolist()[0]
                     if player.inventory.loc[index, 'Amount'] < quantity:
                         await interaction.response.send_message('You do not have enough of the item ' + item, ephemeral = True)
                         return
-                    playerClass.updateItem(player, [item],[-(quantity)])
+                    playerClass.Player.updateItem(player, [item],[-(quantity)])
                 feedback = port.Port.order(id, port.Port.serial_number, (item, action, price, quantity))
                 if feedback:
                     await interaction.response.send_message('Your order has been successfully placed', ephemeral = True)
