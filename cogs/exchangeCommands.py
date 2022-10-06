@@ -6,6 +6,7 @@ from nextcord.ui import Button, View
 import sqliteCommands
 import sys
 import pandas as pd
+import playerClass
 sys.path.insert(1, 'C:/Users/School/OneDrive - The City University of New York/Documents/GitHub/RPG')
 import port 
 import marketdata
@@ -49,6 +50,8 @@ class excCommands(commands.Cog):
             await interaction.response.send_message('You are not registered', ephemeral = True)
         else:
             try:
+                if price < 0 or quantity <= 0:
+                    return
                 if item not in self.item_list:
                     await interaction.response.send_message('Item does not exist', ephemeral= True)
                     return
@@ -57,11 +60,13 @@ class excCommands(commands.Cog):
                     if player.inventory.loc[index, 'Amount'] < price*quantity:
                         await interaction.response.send_message('You do not have the neccessary funds', ephemeral = True)
                         return
+                    playerClass.updateItem(player, ['Gold'],[-(price*quantity)])
                 elif action == 'Sell':
                     index = player.inventory.index[player.inventory['Name'] == item].tolist()[0]
                     if player.inventory.loc[index, 'Amount'] < quantity:
                         await interaction.response.send_message('You do not have enough of the item ' + item, ephemeral = True)
                         return
+                    playerClass.updateItem(player, [item],[-(quantity)])
                 feedback = port.Port.order(id, port.Port.serial_number, (item, action, price, quantity))
                 if feedback:
                     await interaction.response.send_message('Your order has been successfully placed', ephemeral = True)
