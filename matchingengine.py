@@ -5,8 +5,6 @@
 import sqlite3
 import sqliteCommands
 import marketdata
-import sys
-import cogs.exchangeCommands
 
 
 class MatchingEngine:
